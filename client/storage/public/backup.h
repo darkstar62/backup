@@ -25,7 +25,7 @@ class Backup{
   // location, visible from the client computer.  Implementations of this
   // function need to be OS-aware and return the appropriate style path
   // for the operating system.
-  virtual const string OpenAndGetRestorePath() = 0;
+  virtual const std::string OpenAndGetRestorePath() = 0;
 };
 
 }  // namespace client

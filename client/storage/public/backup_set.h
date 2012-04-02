@@ -23,7 +23,7 @@ class BackupSet {
   // Enumerate all backup increments stored in this backup set.  The
   // returned vector contains const pointers to all backup instances; ownership
   // of the backup instances remains with the BackupSet.
-  virtual vector<Backup*> EnumerateBackups() = 0;
+  virtual std::vector<Backup*> EnumerateBackups() = 0;
 
   // Attempt to create an incremental backup on the storage backend representing
   // the passed backup parameters.  This doesn't actually initiate a backup;
@@ -34,10 +34,10 @@ class BackupSet {
   // Otherwise, NULL is returned and the storage backend is left unchanged.
   //
   // The incremental backup uses the last backup instance as a baseline.
-  virtual Backup* CreateIncrementalBackup(string description) = 0;
+  virtual Backup* CreateIncrementalBackup(std::string description) = 0;
 
   // Similar to CreateIncrementalBackup(), but this creates a full backup.
-  virtual Backup* CreateFullBackup(string description) = 0;
+  virtual Backup* CreateFullBackup(std::string description) = 0;
 };
 
 }  // namespace client
