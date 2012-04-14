@@ -1,7 +1,6 @@
 # Copyright (C) 2012, All Rights Reserved.
 # Author: Cory Maccarrone <darkstar6262@gmail.com>
 cmake_minimum_required (VERSION 2.8)
-project(backup_client)
+project(backup_backend)
 
-add_subdirectory(storage)
-add_subdirectory(ui)
+add_subdirectory(btrfs)

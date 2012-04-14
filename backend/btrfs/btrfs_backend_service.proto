@@ -1,0 +1,13 @@
+// Copyright (C) 2012 Cory Maccarrone <darkstar6262@gmail.com>
+
+option cc_generic_services = true;
+
+package backend;
+
+message EmptyMessage {}
+
+service BtrfsBackendService {
+  // Initiate a ping to verify the service is alive.
+  rpc Ping(EmptyMessage) returns (EmptyMessage);
+}
+

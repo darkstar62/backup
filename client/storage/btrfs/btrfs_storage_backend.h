@@ -1,6 +1,5 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
-
 #ifndef BACKUP_CLIENT_STORAGE_BTRFS_BTRFS_STORAGE_BACKEND_H_
 #define BACKUP_CLIENT_STORAGE_BTRFS_BTRFS_STORAGE_BACKEND_H_
 
@@ -8,7 +7,12 @@
 #include <string>
 #include <vector>
 
+#include "boost/scoped_ptr.hpp"
+#include "backend/btrfs/btrfs_backend_service.pb.h"
 #include "base/macros.h"
+#include "casock/rpc/protobuf/client/RPCCallController.h"
+#include "casock/rpc/protobuf/client/RPCCallHandlerFactoryImpl.h"
+#include "casock/rpc/sigio/protobuf/client/RPCClientProxy.h"
 #include "client/storage/public/storage_backend.h"
 
 namespace client {
@@ -22,7 +26,7 @@ class BtrfsStorageBackend : public StorageBackend {
         port_(port) {
   }
 
-  virtual ~BtrfsStorageBackend() {}
+  virtual ~BtrfsStorageBackend();
 
   // Initialize the storage backend.  This should be called after setting
   // configuration parameters.
@@ -45,6 +49,17 @@ class BtrfsStorageBackend : public StorageBackend {
 
   // Port to connect to.
   uint32_t port_;
+
+  // The RPC controller.
+  boost::scoped_ptr<casock::rpc::protobuf::client::RPCCallHandlerFactoryImpl>
+      call_handler_factory_;
+  boost::scoped_ptr<casock::rpc::sigio::protobuf::client::RPCClientProxy>
+      rpc_proxy_;
+  boost::scoped_ptr<casock::rpc::protobuf::client::RPCCallController>
+      rpc_controller_;
+
+  // The backend proxy service stub.
+  boost::scoped_ptr<backend::BtrfsBackendService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(BtrfsStorageBackend);
 };
