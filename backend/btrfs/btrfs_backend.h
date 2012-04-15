@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 
+#include "Ice/Ice.h"
 #include "backend/btrfs/btrfs_backend_service_impl.h"
 #include "base/macros.h"
 #include "boost/scoped_ptr.hpp"
@@ -13,8 +14,8 @@ namespace backend {
 
 class BtrfsBackend {
  public:
-  BtrfsBackend(const uint32_t port)
-      : port_(port) {}
+  BtrfsBackend(Ice::CommunicatorPtr ic, const uint32_t port)
+      : ic_(ic), port_(port) {}
   ~BtrfsBackend() {}
 
   bool Init();
@@ -22,7 +23,8 @@ class BtrfsBackend {
 
  private:
   // The hosted RPC service.
-  boost::scoped_ptr<BtrfsBackendServiceImpl> service_;
+  Ice::ObjectAdapterPtr adapter_;
+  Ice::CommunicatorPtr ic_;
 
   // Port the server should listen on.
   const uint32_t port_;

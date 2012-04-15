@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <vector>
 
+#include "Ice/Ice.h"
 #include "client/storage/btrfs/btrfs_storage_backend.h"
 #include "client/storage/public/backup_set.h"
 #include "gflags/gflags.h"
@@ -23,8 +24,11 @@ int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
   google::InstallFailureSignalHandler();
 
-  BtrfsStorageBackend backend(FLAGS_hostname, FLAGS_port);
+  Ice::CommunicatorPtr ic = Ice::initialize(argc, argv);
+
+  BtrfsStorageBackend backend(ic, FLAGS_hostname, FLAGS_port);
   if (!backend.Init()) {
+    ic->destroy();
     return EXIT_FAILURE;
   }
 
@@ -38,6 +42,7 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  ic->destroy();
   return EXIT_SUCCESS;
 }
 

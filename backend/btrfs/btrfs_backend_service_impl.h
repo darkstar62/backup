@@ -3,7 +3,9 @@
 #ifndef BACKUP_BACKEND_BTRFS_BTRFS_BACKEND_SERVICE_IMPL_H_
 #define BACKUP_BACKEND_BTRFS_BTRFS_BACKEND_SERVICE_IMPL_H_
 
-#include "backend/btrfs/btrfs_backend_service.pb.h"
+#include <vector>
+
+#include "backend/btrfs/btrfs_backend_service.proto.h"
 #include "base/macros.h"
 
 namespace backend {
@@ -13,16 +15,10 @@ class BtrfsBackendServiceImpl : public BtrfsBackendService {
   BtrfsBackendServiceImpl() {}
   virtual ~BtrfsBackendServiceImpl() {}
 
-  virtual void Ping(google::protobuf::RpcController* controller,
-                    const EmptyMessage* request,
-                    EmptyMessage* response,
-                    google::protobuf::Closure* cb_final);
+  virtual void Ping(const Ice::Current&);
 
-  virtual void EnumerateBackupSets(
-      google::protobuf::RpcController* controller,
-      const EmptyMessage* request,
-      EnumerateBackupSetsResponse* response,
-      google::protobuf::Closure* cb_final);
+  virtual std::vector<BackupSetMessage> EnumerateBackupSets(
+      const Ice::Current&);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BtrfsBackendServiceImpl);

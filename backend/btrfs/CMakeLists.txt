@@ -3,17 +3,20 @@
 cmake_minimum_required (VERSION 2.8)
 project(backup_backend_btrfs)
 
+include(Slice2Cpp)
+
 # We need protocol buffers for this library.
 find_package(Boost REQUIRED)
-find_package(Casock REQUIRED)
-find_package(ProtocolBuffers REQUIRED)
+find_package(Ice REQUIRED)
 find_package(GFlags REQUIRED)
 find_package(Glog REQUIRED)
 
-# Build the protobuf library
-wrap_proto(btrfs_proto btrfs_backend_service.proto)
-add_library(btrfs_backend_service_proto_lib ${btrfs_proto})
-target_link_libraries(btrfs_backend_service_proto_lib ${PROTOBUF_LIBRARY})
+generate_slice2cpp_rules(proto_sources proto_headers
+    btrfs_backend_service.ice)
+
+# The service library
+add_library(btrfs_backend_service_lib
+    ${proto_sources} ${proto_headers})
 
 # The backend
 set(backend_sources
@@ -22,18 +25,13 @@ set(backend_sources
     btrfs_backend.h
     btrfs_backend_service_impl.h)
 add_library(btrfs_backend_lib ${backend_sources})
-add_dependencies(btrfs_backend_lib btrfs_backend_service_proto_lib)
 target_link_libraries(btrfs_backend_lib
-    btrfs_backend_service_proto_lib
-    ${CASOCK_LIBRARY_PRO_ASIOBASE}
-    ${CASOCK_LIBRARY_PRO_ASIOSERVER}
-    ${CASOCK_LIBRARY_RPC_AIO_PB_BASE}
-    ${CASOCK_LIBRARY_RPC_AIO_PB_SERVER}
-    ${CASOCK_LIBRARY_RPC_PB_BASE}
-    ${CASOCK_LIBRARY_RPC_PB_SERVER}
-    ${CASOCK_LIBRARY_UTIL}
+    btrfs_backend_service_lib
+    Ice
+    IceUtil
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY})
+add_dependencies(btrfs_backend_lib btrfs_backend_service_lib)
 
 # The binary
 add_executable(btrfs_backend btrfs_backend_main.cc)

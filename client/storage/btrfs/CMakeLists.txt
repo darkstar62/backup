@@ -3,10 +3,10 @@
 cmake_minimum_required (VERSION 2.8)
 project(backup_client_storage_btrfs)
 
-# Requires protocol buffers and casock
+# Required packages
 find_package(Boost REQUIRED)
-find_package(Casock REQUIRED)
 find_package(Glog REQUIRED)
+find_package(Ice REQUIRED)
 find_package(ProtocolBuffers REQUIRED)
 
 set(btrfs_source_files
@@ -15,17 +15,11 @@ set(btrfs_source_files
     btrfs_storage_backend.h
 )
 add_library(backup_client_storage_btrfs ${btrfs_source_files})
-add_dependencies(backup_client_storage_btrfs
-                 btrfs_backend_service_proto_lib)
 target_link_libraries(backup_client_storage_btrfs
-    btrfs_backend_service_proto_lib
+    btrfs_backend_service_lib
     boost_thread
-    ${CASOCK_LIBRARY_RPC_AIO_PB_BASE}
-    ${CASOCK_LIBRARY_RPC_AIO_PB_CLIENT}
-    ${CASOCK_LIBRARY_PRO_ASIOBASE}
-    ${CASOCK_LIBRARY_PRO_ASIOCLIENT}
-    ${CASOCK_LIBRARY_RPC_PB_BASE}
-    ${CASOCK_LIBRARY_RPC_PB_CLIENT}
-    ${CASOCK_LIBRARY_UTIL}
+    Ice
+    IceUtil
     ${GLOG_LIBRARY}
     ${PROTOBUF_LIBRARY})
+add_dependencies(backup_client_storage_btrfs btrfs_backend_service_lib)
