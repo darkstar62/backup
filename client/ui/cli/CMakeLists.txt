@@ -11,6 +11,7 @@ set(cli_client_sources cli_client.cc)
 set(cli_client_deps backup_client_storage_btrfs)
 set(cli_client_libraries
     backup_client_storage_btrfs
+    ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY})
 
 add_executable(cli_client ${cli_client_sources})

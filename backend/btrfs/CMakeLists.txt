@@ -7,6 +7,7 @@ project(backup_backend_btrfs)
 find_package(Boost REQUIRED)
 find_package(Casock REQUIRED)
 find_package(ProtocolBuffers REQUIRED)
+find_package(GFlags REQUIRED)
 
 # Build the protobuf library
 wrap_proto(btrfs_proto btrfs_backend_service.proto)
@@ -28,6 +29,7 @@ target_link_libraries(btrfs_backend_lib
     ${CASOCK_LIBRARY_RPC_SIO_PB_SERVER}
     ${CASOCK_LIBRARY_SIOBASE}
     ${CASOCK_LIBRARY_UTIL}
+    ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY})
 
 # The binary

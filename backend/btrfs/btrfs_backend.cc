@@ -8,6 +8,7 @@
 #include "casock/rpc/sigio/protobuf/server/RPCServerProxy.h"
 #include "casock/sigio/base/Dispatcher.h"
 #include "casock/util/Logger.h"
+#include "glog/logging.h"
 
 using casock::rpc::protobuf::server::RPCCallHandlerFactoryImpl;
 using casock::rpc::sigio::protobuf::server::RPCServerProxy;
@@ -21,7 +22,7 @@ bool BtrfsBackend::Init() {
 }
 
 void BtrfsBackend::Start() {
-  LOGGER->setDebugLevel (LOW_LEVEL);
+  // LOGGER->setDebugLevel (LOW_LEVEL);
   Dispatcher::initialize();
   RPCCallHandlerFactoryImpl callHandlerFactory(service_.get());
   RPCServerProxy proxy(callHandlerFactory, *Dispatcher::getInstance(), port_);

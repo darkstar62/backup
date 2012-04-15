@@ -3,15 +3,21 @@
 
 #include <signal.h>
 
-#include "casock/util/Logger.h"
 #include "client/storage/btrfs/btrfs_storage_backend.h"
+#include "gflags/gflags.h"
 #include "glog/logging.h"
 
 using client::BtrfsStorageBackend;
 
+DEFINE_string(hostname, "localhost", "Host to connect to");
+DEFINE_int32(port, 5827, "Port to connect to");
+
 int main(int argc, char* argv[]) {
-  LOGGER->setDebugLevel (LOW_LEVEL);
-  BtrfsStorageBackend backend("localhost", 1234);
+  google::ParseCommandLineFlags(&argc, &argv, true);
+  google::InitGoogleLogging(argv[0]);
+  google::InstallFailureSignalHandler();
+
+  BtrfsStorageBackend backend(FLAGS_hostname, FLAGS_port);
   backend.Init();
   return 0;
 }

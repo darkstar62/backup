@@ -18,6 +18,7 @@ add_dependencies(backup_client_storage_btrfs
                  btrfs_backend_service_proto_lib)
 target_link_libraries(backup_client_storage_btrfs
     btrfs_backend_service_proto_lib
+    boost_thread
     ${CASOCK_LIBRARY_RPC_PB_BASE}
     ${CASOCK_LIBRARY_RPC_PB_CLIENT}
     ${CASOCK_LIBRARY_RPC_SIO_PB_BASE}
