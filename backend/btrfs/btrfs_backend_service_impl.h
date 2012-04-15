@@ -13,10 +13,16 @@ class BtrfsBackendServiceImpl : public BtrfsBackendService {
   BtrfsBackendServiceImpl() {}
   virtual ~BtrfsBackendServiceImpl() {}
 
-  virtual void Ping(::google::protobuf::RpcController* controller,
+  virtual void Ping(google::protobuf::RpcController* controller,
                     const EmptyMessage* request,
                     EmptyMessage* response,
-                    ::google::protobuf::Closure* cb_final);
+                    google::protobuf::Closure* cb_final);
+
+  virtual void EnumerateBackupSets(
+      google::protobuf::RpcController* controller,
+      const EmptyMessage* request,
+      EnumerateBackupSetsResponse* response,
+      google::protobuf::Closure* cb_final);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BtrfsBackendServiceImpl);

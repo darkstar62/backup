@@ -7,12 +7,14 @@
 #include <string>
 #include <vector>
 
-#include "boost/scoped_ptr.hpp"
 #include "backend/btrfs/btrfs_backend_service.pb.h"
 #include "base/macros.h"
+#include "boost/scoped_ptr.hpp"
+#include "boost/thread/future.hpp"
+#include "casock/rpc/asio/protobuf/client/RPCClientProxy.h"
+#include "casock/rpc/asio/protobuf/client/RPCSocketClientFactoryImpl.h"
 #include "casock/rpc/protobuf/client/RPCCallController.h"
 #include "casock/rpc/protobuf/client/RPCCallHandlerFactoryImpl.h"
-#include "casock/rpc/sigio/protobuf/client/RPCClientProxy.h"
 #include "client/storage/public/storage_backend.h"
 
 namespace client {
@@ -20,7 +22,7 @@ class BackupSet;
 
 class BtrfsStorageBackend : public StorageBackend {
  public:
-  BtrfsStorageBackend(const std::string host, const uint32_t port)
+  BtrfsStorageBackend(const std::string host, const std::string port)
       : StorageBackend(),
         host_(host),
         port_(port) {
@@ -44,19 +46,25 @@ class BtrfsStorageBackend : public StorageBackend {
   virtual BackupSet* CreateBackupSet(std::string name);
 
  private:
+  // A do-nothing handler that simply returns true status to the passed in
+  // task.  Useful for making asynchronous calls synchronous.
+  void OnRpcDone(casock::rpc::protobuf::client::RPCCallController* rpc,
+                 boost::promise<bool>* task);
+
   // Host to connect to.
   std::string host_;
 
   // Port to connect to.
-  uint32_t port_;
+  std::string port_;
 
   // The RPC controller.
+  boost::scoped_ptr<casock::rpc::asio::protobuf::client::RPCSocketClientFactoryImpl>
+      socket_factory_;
   boost::scoped_ptr<casock::rpc::protobuf::client::RPCCallHandlerFactoryImpl>
       call_handler_factory_;
-  boost::scoped_ptr<casock::rpc::sigio::protobuf::client::RPCClientProxy>
+  boost::scoped_ptr<casock::rpc::asio::protobuf::client::RPCClientProxy>
       rpc_proxy_;
-  boost::scoped_ptr<casock::rpc::protobuf::client::RPCCallController>
-      rpc_controller_;
+
 
   // The backend proxy service stub.
   boost::scoped_ptr<backend::BtrfsBackendService> service_;

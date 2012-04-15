@@ -8,6 +8,7 @@ find_package(Boost REQUIRED)
 find_package(Casock REQUIRED)
 find_package(ProtocolBuffers REQUIRED)
 find_package(GFlags REQUIRED)
+find_package(Glog REQUIRED)
 
 # Build the protobuf library
 wrap_proto(btrfs_proto btrfs_backend_service.proto)
@@ -21,17 +22,20 @@ set(backend_sources
     btrfs_backend.h
     btrfs_backend_service_impl.h)
 add_library(btrfs_backend_lib ${backend_sources})
+add_dependencies(btrfs_backend_lib btrfs_backend_service_proto_lib)
 target_link_libraries(btrfs_backend_lib
     btrfs_backend_service_proto_lib
+    ${CASOCK_LIBRARY_PRO_ASIOBASE}
+    ${CASOCK_LIBRARY_PRO_ASIOSERVER}
+    ${CASOCK_LIBRARY_RPC_AIO_PB_BASE}
+    ${CASOCK_LIBRARY_RPC_AIO_PB_SERVER}
     ${CASOCK_LIBRARY_RPC_PB_BASE}
     ${CASOCK_LIBRARY_RPC_PB_SERVER}
-    ${CASOCK_LIBRARY_RPC_SIO_PB_BASE}
-    ${CASOCK_LIBRARY_RPC_SIO_PB_SERVER}
-    ${CASOCK_LIBRARY_SIOBASE}
     ${CASOCK_LIBRARY_UTIL}
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY})
 
 # The binary
 add_executable(btrfs_backend btrfs_backend_main.cc)
+add_dependencies(btrfs_backend btrfs_backend_lib)
 target_link_libraries(btrfs_backend btrfs_backend_lib)

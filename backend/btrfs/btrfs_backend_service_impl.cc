@@ -14,7 +14,21 @@ void BtrfsBackendServiceImpl::Ping(RpcController* controller,
                                    const EmptyMessage* request,
                                    EmptyMessage* response,
                                    Closure* cb_final) {
-  LOG(INFO) << "Ping!";
+  cb_final->Run();
+}
+
+void BtrfsBackendServiceImpl::EnumerateBackupSets(
+    RpcController* controller,
+    const EmptyMessage* request,
+    EnumerateBackupSetsResponse* response,
+    Closure* cb_final) {
+  LOG(INFO) << "Enumerate Backup Sets";
+  // Return a list of all the backup sets we're managing.
+  // TODO(darkstar62): Enumerate the backup sets and actually return something
+  // meaningful.
+  for (int i = 0; i < 10000; ++i) {
+    response->add_backup_sets()->set_name("Foo");
+  }
   cb_final->Run();
 }
 

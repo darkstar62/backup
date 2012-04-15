@@ -10,6 +10,7 @@ find_package(Glog REQUIRED)
 find_package(ProtocolBuffers REQUIRED)
 
 set(btrfs_source_files
+    btrfs_backup_set.h
     btrfs_storage_backend.cc
     btrfs_storage_backend.h
 )
@@ -19,12 +20,12 @@ add_dependencies(backup_client_storage_btrfs
 target_link_libraries(backup_client_storage_btrfs
     btrfs_backend_service_proto_lib
     boost_thread
+    ${CASOCK_LIBRARY_RPC_AIO_PB_BASE}
+    ${CASOCK_LIBRARY_RPC_AIO_PB_CLIENT}
+    ${CASOCK_LIBRARY_PRO_ASIOBASE}
+    ${CASOCK_LIBRARY_PRO_ASIOCLIENT}
     ${CASOCK_LIBRARY_RPC_PB_BASE}
     ${CASOCK_LIBRARY_RPC_PB_CLIENT}
-    ${CASOCK_LIBRARY_RPC_SIO_PB_BASE}
-    ${CASOCK_LIBRARY_RPC_SIO_PB_CLIENT}
-    ${CASOCK_LIBRARY_SIOBASE}
-    ${CASOCK_LIBRARY_SIOCLIENT}
     ${CASOCK_LIBRARY_UTIL}
     ${GLOG_LIBRARY}
     ${PROTOBUF_LIBRARY})

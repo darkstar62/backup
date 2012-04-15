@@ -1,29 +1,31 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
-#ifndef BACKUP_CLIENT_STORAGE_PUBLIC_BACKUP_SET_H_
-#define BACKUP_CLIENT_STORAGE_PUBLIC_BACKUP_SET_H_
+#ifndef BACKUP_CLIENT_STORAGE_BTRFS_BTRFS_BACKUP_SET_H_
+#define BACKUP_CLIENT_STORAGE_BTRFS_BTRFS_BACKUP_SET_H_
 
 #include <string>
 #include <vector>
+
+#include "client/storage/public/backup_set.h"
 
 namespace client {
 
 class Backup;
 
-// A representation of a backup set.  Backup sets contain one or more
-// backup increments (which can be incremental relative to another backup
-// increment or a full backup).  Subclasses of this are expected to implement
-// specific storage backend functionality.
-class BackupSet {
+// A BTRFS-based remote backup set.  These backup sets represent sets of data
+// on a remote server.
+class BtrfsBackupSet : public BackupSet {
  public:
-  BackupSet(const std::string& description) : description_(description) {}
-  virtual ~BackupSet() {}
+  BtrfsBackupSet(const std::string& description) : BackupSet(description) {}
+  virtual ~BtrfsBackupSet() {}
 
   // Enumerate all backup increments stored in this backup set.  The
   // returned vector contains const pointers to all backup instances; ownership
   // of the backup instances remains with the BackupSet.
-  virtual std::vector<Backup*> EnumerateBackups() = 0;
+  virtual std::vector<Backup*> EnumerateBackups() {
+    return std::vector<Backup*>();
+  }
 
   // Attempt to create an incremental backup on the storage backend representing
   // the passed backup parameters.  This doesn't actually initiate a backup;
@@ -34,18 +36,12 @@ class BackupSet {
   // Otherwise, NULL is returned and the storage backend is left unchanged.
   //
   // The incremental backup uses the last backup instance as a baseline.
-  virtual Backup* CreateIncrementalBackup(std::string description) = 0;
+  virtual Backup* CreateIncrementalBackup(std::string description) { return NULL; }
 
   // Similar to CreateIncrementalBackup(), but this creates a full backup.
-  virtual Backup* CreateFullBackup(std::string description) = 0;
-
-  // Return the description of this backup set.
-  const std::string description() const { return description_; }
-
- private:
-  // Description of this backup set.
-  const std::string description_;
+  virtual Backup* CreateFullBackup(std::string description) { return NULL; }
 };
 
 }  // namespace client
-#endif  // BACKUP_CLIENT_STORAGE_PUBLIC_BACKUP_SET_H_
+#endif  // BACKUP_CLIENT_STORAGE_BTRFS_BTRFS_BACKUP_SET_H_
+

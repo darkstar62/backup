@@ -6,8 +6,19 @@ package backend;
 
 message EmptyMessage {}
 
+message BackupSet {
+  optional string name = 1;
+}
+
+message EnumerateBackupSetsResponse {
+  repeated BackupSet backup_sets = 1;
+}
+
 service BtrfsBackendService {
   // Initiate a ping to verify the service is alive.
   rpc Ping(EmptyMessage) returns (EmptyMessage);
+
+  // Get all the backup sets managed by the backend.
+  rpc EnumerateBackupSets(EmptyMessage) returns (EnumerateBackupSetsResponse);
 }
 
