@@ -17,8 +17,6 @@ using std::vector;
 DEFINE_string(hostname, "localhost", "Host to connect to");
 DEFINE_string(port, "5827", "Port to connect to");
 
-DEFINE_int32(v, 0, "Verbosity level");
-
 int main(int argc, char* argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);

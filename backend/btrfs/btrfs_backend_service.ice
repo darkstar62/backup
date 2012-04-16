@@ -1,6 +1,10 @@
 module backend {
 
 struct BackupSetMessage {
+  // Unique identifier of the backup set in the backend.
+  long id;
+
+  // Descriptive name of the backup set.
   string name;
 };
 
