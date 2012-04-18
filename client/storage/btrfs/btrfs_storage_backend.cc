@@ -15,6 +15,7 @@
 
 using backend::BtrfsBackendServicePrx;
 using backend::BackupSetList;
+using backend::BackupSetMessage;
 using std::ostringstream;
 using std::string;
 using std::vector;
@@ -49,14 +50,23 @@ vector<BackupSet*> BtrfsStorageBackend::EnumerateBackupSets() {
   for (BackupSetList::iterator iter = sets.begin();
        iter != sets.end(); ++iter) {
     VLOG(3) << "Backup set: " << iter->name;
-    BtrfsBackupSet* backup_set = new BtrfsBackupSet(iter->name);
+    BtrfsBackupSet* backup_set = new BtrfsBackupSet(*iter);
     backup_sets.push_back(backup_set);
   }
   return backup_sets;
 }
 
-BackupSet* BtrfsStorageBackend::CreateBackupSet(string name) {
-  return NULL;
+bool BtrfsStorageBackend::CreateBackupSet(const string name,
+                                          BackupSet** backup_set) {
+  BackupSetMessage msg;
+  bool retval = service_->CreateBackupSet(name, msg);
+  if (!retval) {
+    return retval;
+  }
+
+  BtrfsBackupSet* set = new BtrfsBackupSet(msg);
+  *backup_set = set;
+  return true;
 }
 
 }  // namespace client

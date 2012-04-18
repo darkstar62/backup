@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
       ic->createObjectAdapterWithEndpoints("BtrfsBackendServiceAdapter",
                                            host_port_stream.str());
 
-  BtrfsBackendServiceImpl* service = new BtrfsBackendServiceImpl(FLAGS_backend_path);
+  BtrfsBackendServiceImpl* service = new BtrfsBackendServiceImpl(ic, FLAGS_backend_path);
   CHECK(service->Init());
 
   Ice::ObjectPtr object = service;

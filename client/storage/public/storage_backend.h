@@ -29,9 +29,10 @@ class StorageBackend {
 
   // Attempt to create a backup set on the storage backend representing
   // the passed backup parameters.  If successful, this returns a new BackupSet
-  // representing the set (ownership remains with the StorageBackend).
-  // Otherwise this function returns NULL.
-  virtual BackupSet* CreateBackupSet(std::string name) = 0;
+  // representing the set (ownership remains with the StorageBackend), pointed to
+  // by the passed pointer and the function returns true.  Otherwise, the pointer
+  // is left alone and the function returns false.
+  virtual bool CreateBackupSet(std::string name, BackupSet** backup_set) = 0;
 };
 
 }  // namespace client

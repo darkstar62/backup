@@ -3,10 +3,11 @@
 #ifndef BACKUP_BACKEND_BTRFS_BTRFS_BACKEND_SERVICE_IMPL_H_
 #define BACKUP_BACKEND_BTRFS_BTRFS_BACKEND_SERVICE_IMPL_H_
 
+#include <string>
 #include <vector>
 
+#include "Ice/Ice.h"
 #include "backend/btrfs/btrfs_backend_service.proto.h"
-#include "backend/btrfs/file_formats.pb.h"
 #include "base/macros.h"
 
 namespace backend {
@@ -18,18 +19,22 @@ class BtrfsBackendServiceImpl : public BtrfsBackendService {
  public:
   // Initialize the backend service.  The backup sets are enumberated from the given
   // path on the server filesystem.
-  BtrfsBackendServiceImpl(const std::string& path);
+  BtrfsBackendServiceImpl(Ice::CommunicatorPtr ic, const std::string& path);
   virtual ~BtrfsBackendServiceImpl();
 
   // Initialize the backend.  Returns true if successful, false otherwise.
   bool Init();
 
   // Initiate a ping to verify the service is alive.
-  virtual void Ping(const Ice::Current&);
+  virtual void Ping(const Ice::Current& current);
 
   // Get all the backup sets managed by the backend.
   virtual std::vector<BackupSetMessage> EnumerateBackupSets(
-      const Ice::Current&);
+      const Ice::Current& current);
+
+  // Create a new backup set.
+  virtual bool CreateBackupSet(const std::string& name, BackupSetMessage& set_ref,
+                               const Ice::Current& current);
 
  private:
   // Path to the backup sets on the server filesystem.  This path is used for all
@@ -37,6 +42,8 @@ class BtrfsBackendServiceImpl : public BtrfsBackendService {
   const std::string path_;
 
   BackupDescriptor backup_descriptor_;
+
+  Ice::CommunicatorPtr ic_;
 
   DISALLOW_COPY_AND_ASSIGN(BtrfsBackendServiceImpl);
 };

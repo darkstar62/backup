@@ -10,7 +10,6 @@ find_package(Boost COMPONENTS system filesystem REQUIRED)
 find_package(Ice REQUIRED)
 find_package(GFlags REQUIRED)
 find_package(Glog REQUIRED)
-find_package(ProtocolBuffers REQUIRED)
 
 generate_slice2cpp_rules(proto_sources proto_headers
     btrfs_backend_service.ice)
@@ -19,28 +18,19 @@ generate_slice2cpp_rules(proto_sources proto_headers
 add_library(btrfs_backend_service_lib
     ${proto_sources} ${proto_headers})
 
-# The file formats proto
-wrap_proto(btrfs_backend_file_formats_proto file_formats.proto)
-add_library(btrfs_backend_file_formats_lib ${btrfs_backend_file_formats_proto})
-add_dependencies(btrfs_backend_file_formats_lib btrfs_backend_file_formats_proto)
-target_link_libraries(btrfs_backend_file_formats_lib
-    ${PROTOBUF_LIBRARY})
-
 # The backend
 set(backend_sources
     btrfs_backend_service_impl.cc
     btrfs_backend_service_impl.h)
 add_library(btrfs_backend_lib ${backend_sources})
 target_link_libraries(btrfs_backend_lib
-    btrfs_backend_file_formats_lib
     btrfs_backend_service_lib
     Ice
     IceUtil
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
     ${GFLAGS_LIBRARY}
-    ${GLOG_LIBRARY}
-    ${PROTOBUF_LIBRARY})
+    ${GLOG_LIBRARY})
 add_dependencies(btrfs_backend_lib btrfs_backend_service_lib)
 
 # The binary

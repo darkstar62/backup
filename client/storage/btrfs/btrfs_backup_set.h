@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "backend/btrfs/btrfs_backend_service.proto.h"
 #include "client/storage/public/backup_set.h"
 
 namespace client {
@@ -17,7 +18,8 @@ class Backup;
 // on a remote server.
 class BtrfsBackupSet : public BackupSet {
  public:
-  BtrfsBackupSet(const std::string& description) : BackupSet(description) {}
+  BtrfsBackupSet(const backend::BackupSetMessage& set_msg)
+      : BackupSet(set_msg.name) {}
   virtual ~BtrfsBackupSet() {}
 
   // Enumerate all backup increments stored in this backup set.  The

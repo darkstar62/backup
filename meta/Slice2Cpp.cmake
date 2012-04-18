@@ -39,7 +39,7 @@ macro( GENERATE_SLICE2CPP_RULES generated_cpp_list generated_header_list )
     else()
         # satellite projects need to include slice files from orca installation
         set( orca_slice_dir ${ORCA_SLICE_DIR} )
-        set( slice_args ${SLICE_PROJECT_ARGS} -I${proj_slice_src_dir} -I${ICE_SLICE_DIR} --include-dir ${proj_slice_src_dir} --stream --output-dir ${proj_slice_src_dir})
+        set( slice_args ${SLICE_PROJECT_ARGS} -I${proj_slice_src_dir} -I${ICE_SLICE_DIR} --include-dir ${proj_slice_src_dir} --underscore --stream --output-dir ${proj_slice_src_dir})
     endif()
 
     #
