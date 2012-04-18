@@ -8,14 +8,14 @@
 
 #include "Ice/Ice.h"
 #include "boost/scoped_ptr.hpp"
-#include "client/storage/btrfs/btrfs_storage_backend.h"
-#include "client/storage/public/backup_set.h"
+#include "backend/btrfs/btrfs_storage_backend.h"
+#include "backend/public/backup_set.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 
 using boost::scoped_ptr;
-using client::BackupSet;
-using client::BtrfsStorageBackend;
+using backup::BackupSet;
+using backup::BtrfsStorageBackend;
 using std::cout;
 using std::endl;
 using std::string;

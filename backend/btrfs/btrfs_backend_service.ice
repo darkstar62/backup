@@ -1,4 +1,4 @@
-module backend {
+module backup_proto {
 
 struct BackupSetMessage {
   // Unique identifier of the backup set in the backend.  Only positive

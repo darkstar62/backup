@@ -10,7 +10,7 @@
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 
-using backend::BtrfsBackendServiceImpl;
+using backup::BtrfsBackendServiceImpl;
 using std::ostringstream;
 
 DEFINE_int32(port, 5827, "Port to listen on");

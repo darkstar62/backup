@@ -1,14 +1,14 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
-#ifndef BACKUP_CLIENT_STORAGE_PUBLIC_BACKUP_H_
-#define BACKUP_CLIENT_STORAGE_PUBLIC_BACKUP_H_
+#ifndef BACKUP_BACKEND_PUBLIC_BACKUP_H_
+#define BACKUP_BACKEND_PUBLIC_BACKUP_H_
 
 #include <string>
 
-#include "client/storage/public/file_list.h"
+#include "backend/public/file_list.h"
 
-namespace client {
+namespace backup {
 
 class Backup{
  public:
@@ -28,5 +28,5 @@ class Backup{
   virtual const std::string OpenAndGetRestorePath() = 0;
 };
 
-}  // namespace client
-#endif  // BACKUP_CLIENT_STORAGE_PUBLIC_BACKUP_H_
+}  // namespace backup
+#endif  // BACKUP_BACKEND_PUBLIC_BACKUP_H_

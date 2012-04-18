@@ -8,21 +8,21 @@
 #include <vector>
 
 #include "backend/btrfs/btrfs_backend_service.proto.h"
-#include "client/storage/btrfs/btrfs_backup_set.h"
-#include "client/storage/btrfs/btrfs_storage_backend.h"
+#include "backend/btrfs/btrfs_backup_set.h"
+#include "backend/btrfs/btrfs_storage_backend.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 
-using backend::BtrfsBackendServicePrx;
-using backend::BackupSetList;
-using backend::BackupSetMessage;
+using backup_proto::BackupSetList;
+using backup_proto::BackupSetMessage;
+using backup_proto::BtrfsBackendServicePrx;
 using std::ostringstream;
 using std::string;
 using std::vector;
 
 DEFINE_int32(num_rpc_threads, 1, "Number of threads for RPC handling");
 
-namespace client {
+namespace backup {
 class BackupSet;
 
 BtrfsStorageBackend::~BtrfsStorageBackend() {
@@ -69,4 +69,4 @@ bool BtrfsStorageBackend::CreateBackupSet(const string name,
   return true;
 }
 
-}  // namespace client
+}  // namespace backup

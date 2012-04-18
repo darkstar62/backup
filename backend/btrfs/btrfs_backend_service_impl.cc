@@ -19,7 +19,7 @@ using std::ostringstream;
 using std::string;
 using std::vector;
 
-namespace backend {
+namespace backup {
 
 BtrfsBackendServiceImpl::BtrfsBackendServiceImpl(Ice::CommunicatorPtr ic,
                                                  const std::string& path)
@@ -75,21 +75,22 @@ void BtrfsBackendServiceImpl::Ping(const Ice::Current& current) {
   // Nothing to do here, we just return.
 }
 
-vector<BackupSetMessage> BtrfsBackendServiceImpl::EnumerateBackupSets(
+backup_proto::BackupSetList BtrfsBackendServiceImpl::EnumerateBackupSets(
     const Ice::Current& current) {
   VLOG(3) << "EnumerateBackupSets() requested";
   // Return a list of all the backup sets we're managing.
-  vector<BackupSetMessage> retval;
+  backup_proto::BackupSetList retval;
   for (int i = 0; i < backup_descriptor_.backup_sets.size(); ++i) {
-    BackupSetMessage msg = backup_descriptor_.backup_sets.at(i);
+    backup_proto::BackupSetMessage msg = backup_descriptor_.backup_sets.at(i);
     retval.push_back(msg);
   }
   return retval;
 }
 
 bool BtrfsBackendServiceImpl::CreateBackupSet(
-    const string& name, BackupSetMessage& set_ref, const Ice::Current& current) {
-  BackupSetMessage proto_set;
+    const string& name, backup_proto::BackupSetMessage& set_ref,
+    const Ice::Current& current) {
+  backup_proto::BackupSetMessage proto_set;
   proto_set.name = name;
   proto_set.id = backup_descriptor_.next_id++;
   backup_descriptor_.backup_sets.push_back(proto_set);
@@ -98,4 +99,4 @@ bool BtrfsBackendServiceImpl::CreateBackupSet(
   return true;
 }
 
-}  // namespace backend
+}  // namespace backup

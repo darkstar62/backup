@@ -1,7 +1,7 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
-#ifndef BACKUP_CLIENT_STORAGE_BTRFS_BTRFS_STORAGE_BACKEND_H_
-#define BACKUP_CLIENT_STORAGE_BTRFS_BTRFS_STORAGE_BACKEND_H_
+#ifndef BACKUP_BACKEND_BTRFS_BTRFS_STORAGE_BACKEND_H_
+#define BACKUP_BACKEND_BTRFS_BTRFS_STORAGE_BACKEND_H_
 
 #include <stdint.h>
 #include <string>
@@ -9,10 +9,10 @@
 
 #include "Ice/Ice.h"
 #include "backend/btrfs/btrfs_backend_service.proto.h"
+#include "backend/public/storage_backend.h"
 #include "base/macros.h"
-#include "client/storage/public/storage_backend.h"
 
-namespace client {
+namespace backup {
 class BackupSet;
 
 class BtrfsStorageBackend : public StorageBackend {
@@ -51,11 +51,11 @@ class BtrfsStorageBackend : public StorageBackend {
   std::string port_;
 
   // The RPC controller.
-  backend::BtrfsBackendServicePrx service_;
+  backup_proto::BtrfsBackendServicePrx service_;
   Ice::CommunicatorPtr ic_;
 
   DISALLOW_COPY_AND_ASSIGN(BtrfsStorageBackend);
 };
 
-}  // namespace client
-#endif  // BACKUP_CLIENT_STORAGE_BTRFS_BTRFS_STORAGE_BACKEND_H_
+}  // namespace backup
+#endif  // BACKUP_BACKEND_BTRFS_BTRFS_STORAGE_BACKEND_H_
