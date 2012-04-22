@@ -1,53 +1,71 @@
 # Copyright (C) 2012, All Rights Reserved.
 # Author: Cory Maccarrone <darkstar6262@gmail.com>
-cmake_minimum_required (VERSION 2.8)
-project(backup_backend_btrfs)
+CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
+PROJECT(backup_backend_btrfs)
 
-include(Slice2Cpp)
+INCLUDE(Slice2Cpp)
 
-find_package(Boost COMPONENTS system filesystem REQUIRED)
-find_package(Ice REQUIRED)
-find_package(GFlags REQUIRED)
-find_package(Glog REQUIRED)
+FIND_PACKAGE(Boost COMPONENTS system filesystem REQUIRED)
+FIND_PACKAGE(Ice REQUIRED)
+FIND_PACKAGE(GFlags REQUIRED)
+FIND_PACKAGE(Glog REQUIRED)
 
 # The service library
-generate_slice2cpp_rules(proto_sources proto_headers
-    btrfs_backend_service.ice)
-add_library(btrfs_backend_service_lib
-    ${proto_sources} ${proto_headers})
+# LIBRARY: btrfs_backend_service_lib
+    GENERATE_SLICE2CPP_RULES(
+        proto_sources proto_headers
+            btrfs_backend_service.ice)
+    ADD_LIBRARY(
+        btrfs_backend_service_lib
+            ${proto_sources}
+            ${proto_headers})
 
 # The backend client interface
-add_library(backup_client_storage_btrfs
-    btrfs_backup_set.h
-    btrfs_storage_backend.cc
-    btrfs_storage_backend.h
-)
-target_link_libraries(backup_client_storage_btrfs
-    btrfs_backend_service_lib
-    boost_thread
-    Ice
-    IceUtil
-    ${GLOG_LIBRARY}
-    ${PROTOBUF_LIBRARY})
-add_dependencies(backup_client_storage_btrfs btrfs_backend_service_lib)
+# LIBRARY: backup_client_storage_btrfs
+    ADD_LIBRARY(
+        backup_client_storage_btrfs
+            btrfs_backup_set.h
+            btrfs_storage_backend.cc
+            btrfs_storage_backend.h)
+    TARGET_LINK_LIBRARIES(
+        backup_client_storage_btrfs
+            btrfs_backend_service_lib
+            boost_thread
+            Ice
+            IceUtil
+            ${GLOG_LIBRARY}
+            ${PROTOBUF_LIBRARY})
+    ADD_DEPENDENCIES(
+        backup_client_storage_btrfs
+            btrfs_backend_service_lib)
 
 # The backend server process
-add_library(btrfs_backend_lib
-    btrfs_backend_service_impl.cc
-    btrfs_backend_service_impl.h)
-target_link_libraries(btrfs_backend_lib
-    btrfs_backend_service_lib
-    Ice
-    IceUtil
-    ${Boost_FILESYSTEM_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY}
-    ${GFLAGS_LIBRARY}
-    ${GLOG_LIBRARY})
-add_dependencies(btrfs_backend_lib
-    btrfs_backend_service_lib)
+# LIBRARY: btrfs_backend_lib
+    ADD_LIBRARY(
+        btrfs_backend_lib
+            btrfs_backend_service_impl.cc
+            btrfs_backend_service_impl.h)
+    TARGET_LINK_LIBRARIES(
+        btrfs_backend_lib
+            btrfs_backend_service_lib
+            Ice
+            IceUtil
+            ${Boost_FILESYSTEM_LIBRARY}
+            ${Boost_SYSTEM_LIBRARY}
+            ${GFLAGS_LIBRARY}
+            ${GLOG_LIBRARY})
+    ADD_DEPENDENCIES(
+        btrfs_backend_lib
+            btrfs_backend_service_lib)
 
-# The binary
-add_executable(btrfs_backend btrfs_backend_main.cc)
-add_dependencies(btrfs_backend btrfs_backend_lib)
-target_link_libraries(btrfs_backend btrfs_backend_lib)
+# BINARY: btrfs_backend
+    ADD_EXECUTABLE(
+        btrfs_backend
+            btrfs_backend_main.cc)
+    ADD_DEPENDENCIES(
+        btrfs_backend
+            btrfs_backend_lib)
+    TARGET_LINK_LIBRARIES(
+        btrfs_backend
+            btrfs_backend_lib)
 

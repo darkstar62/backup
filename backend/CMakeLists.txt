@@ -1,6 +1,6 @@
 # Copyright (C) 2012, All Rights Reserved.
 # Author: Cory Maccarrone <darkstar6262@gmail.com>
-cmake_minimum_required (VERSION 2.8)
-project(backup_backend)
+CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
+PROJECT(backup_backend)
 
-add_subdirectory(btrfs)
+ADD_SUBDIRECTORY(btrfs)
