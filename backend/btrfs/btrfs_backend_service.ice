@@ -1,3 +1,11 @@
+// Copyright (C) 2012, All Rights Reserved.
+// Author: Cory Maccarrone <darkstar6262@gmail.com>
+
+#ifndef BACKUP_BACKEND_BTRFS_BTRFS_BACKEND_SERVICE_ICE_
+#define BACKUP_BACKEND_BTRFS_BTRFS_BACKEND_SERVICE_ICE_
+
+#include <backend/btrfs/status.ice>
+
 module backup_proto {
 
 struct BackupSetMessage {
@@ -30,8 +38,15 @@ interface BtrfsBackendService {
   // BackupSetMessage is filled with the details of the set and the function
   // returns true.  Otherwise, the passed message is left alone and the function
   // returns false.
-  bool CreateBackupSet(string name, out BackupSetMessage set);
+  Status CreateBackupSet(string name, out BackupSetMessage set);
+
+  // Retrieve the backup set with the given name.  If successful, the passed
+  // BackupSetMessage is filled withthe details of the set and the function
+  // returns true.  Otherwise, the passed message is left alone and the function
+  // returns false.
+  Status GetBackupSet(string name, out BackupSetMessage set);
 };
 
 };  // module backend
 
+#endif  // BACKUP_BACKEND_BTRFS_BTRFS_BACKEND_SERVICE_ICE_

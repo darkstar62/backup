@@ -4,6 +4,7 @@
 #ifndef BACKUP_BACKEND_BTRFS_BTRFS_BACKUP_SET_H_
 #define BACKUP_BACKEND_BTRFS_BTRFS_BACKUP_SET_H_
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
@@ -38,10 +39,15 @@ class BtrfsBackupSet : public BackupSet {
   // Otherwise, NULL is returned and the storage backend is left unchanged.
   //
   // The incremental backup uses the last backup instance as a baseline.
-  virtual Backup* CreateIncrementalBackup(std::string description) { return NULL; }
+  virtual Backup* CreateIncrementalBackup(const BackupOptions& options);
 
   // Similar to CreateIncrementalBackup(), but this creates a full backup.
-  virtual Backup* CreateFullBackup(std::string description) { return NULL; }
+  //
+  // For BTRFS, this creates a new filesystem image of the approprate (sparse)
+  // size, able to contain the full uncompressed contents of the backup.
+  // Obviously compression will bring the requirements down, but we don't
+  // rely on that always working.
+  virtual Backup* CreateFullBackup(const BackupOptions& options);
 };
 
 }  // namespace backup

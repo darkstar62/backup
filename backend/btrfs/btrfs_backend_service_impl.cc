@@ -9,9 +9,15 @@
 #include "Ice/Ice.h"
 #include "backend/btrfs/btrfs_backend_service.proto.h"
 #include "backend/btrfs/btrfs_backend_service_impl.h"
+#include "backend/btrfs/status.proto.h"
+#include "backend/btrfs/status_impl.h"
 #include "boost/filesystem.hpp"
 #include "glog/logging.h"
 
+using backup_proto::StatusImpl;
+using backup_proto::StatusPtr;
+using backup_proto::kStatusBackupSetNotFound;
+using backup_proto::kStatusOk;
 using boost::filesystem::path;
 using std::fstream;
 using std::ios;
@@ -87,7 +93,7 @@ backup_proto::BackupSetList BtrfsBackendServiceImpl::EnumerateBackupSets(
   return retval;
 }
 
-bool BtrfsBackendServiceImpl::CreateBackupSet(
+StatusPtr BtrfsBackendServiceImpl::CreateBackupSet(
     const string& name, backup_proto::BackupSetMessage& set_ref,
     const Ice::Current& current) {
   backup_proto::BackupSetMessage proto_set;
@@ -96,7 +102,24 @@ bool BtrfsBackendServiceImpl::CreateBackupSet(
   backup_descriptor_.backup_sets.push_back(proto_set);
 
   set_ref = proto_set;
-  return true;
+  return StatusImpl::MakeStatusPtr(kStatusOk);
+}
+
+StatusPtr BtrfsBackendServiceImpl::GetBackupSet(
+    const string& name, backup_proto::BackupSetMessage& set_ref,
+    const Ice::Current& current) {
+  for (backup_proto::BackupSetList::iterator iter =
+           backup_descriptor_.backup_sets.begin();
+       iter != backup_descriptor_.backup_sets.end();
+       ++iter) {
+    if ((*iter).name == name) {
+      set_ref = *iter;
+      return StatusImpl::MakeStatusPtr(kStatusOk);
+    }
+  }
+  return StatusImpl::MakeStatusPtr(
+      kStatusBackupSetNotFound,
+      "Backup set specified could not be found");
 }
 
 }  // namespace backup

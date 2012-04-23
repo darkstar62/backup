@@ -35,11 +35,11 @@ macro( GENERATE_SLICE2CPP_RULES generated_cpp_list generated_header_list )
 
     # NOTE: funky interaction between cmake variable and the Makefile generation: cannot use "" around the slice_args!
     if( ORCA_MOTHERSHIP )
-        set( slice_args ${SLICE_PROJECT_ARGS} -I${proj_slice_src_dir} -I${ICE_SLICE_DIR} --include-dir ${slice_module} --stream --output-dir ${slice2cpp_binary_dir}/${slice_module} )
+        set( slice_args ${SLICE_PROJECT_ARGS} -I${slice_module} -I${ICE_SLICE_DIR} --include-dir ${slice_module} --stream --output-dir ${slice2cpp_binary_dir}/${slice_module} )
     else()
         # satellite projects need to include slice files from orca installation
         set( orca_slice_dir ${ORCA_SLICE_DIR} )
-        set( slice_args ${SLICE_PROJECT_ARGS} -I${proj_slice_src_dir} -I${ICE_SLICE_DIR} --include-dir ${proj_slice_src_dir} --underscore --stream --output-dir ${proj_slice_src_dir})
+        set( slice_args ${SLICE_PROJECT_ARGS} -I${slice_module} -I${ICE_SLICE_DIR} --include-dir ${proj_slice_src_dir} --underscore --stream --output-dir ${proj_slice_src_dir})
     endif()
 
     #

@@ -13,8 +13,8 @@ class FileList {
   FileList() {}
   ~FileList() {}
 
-  bool AddFile(string path);
-  bool AddDirectory(string path);
+  bool AddFile(std::string path);
+  bool AddDirectory(std::string path);
 };
 
 }  // namespace backup

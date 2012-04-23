@@ -33,6 +33,10 @@ class StorageBackend {
   // by the passed pointer and the function returns true.  Otherwise, the pointer
   // is left alone and the function returns false.
   virtual bool CreateBackupSet(std::string name, BackupSet** backup_set) = 0;
+
+  // Retrieve the backup set with the given name.  If the backup set cannot
+  // be found or an error occurs, this returns NULL.
+  virtual BackupSet* GetBackupSet(std::string name) = 0;
 };
 
 }  // namespace backup

@@ -8,6 +8,8 @@
 
 #include "Ice/Ice.h"
 #include "backend/btrfs/btrfs_backend_service.proto.h"
+#include "backend/btrfs/status.proto.h"
+#include "backend/btrfs/status_impl.h"
 #include "base/macros.h"
 
 namespace backup {
@@ -33,9 +35,16 @@ class BtrfsBackendServiceImpl : public backup_proto::BtrfsBackendService {
       const Ice::Current& current);
 
   // Create a new backup set.
-  virtual bool CreateBackupSet(const std::string& name,
-                               backup_proto::BackupSetMessage& set_ref,
-                               const Ice::Current& current);
+  virtual backup_proto::StatusPtr CreateBackupSet(
+      const std::string& name,
+      backup_proto::BackupSetMessage& set_ref,
+      const Ice::Current& current);
+
+  // Retrieve an existing backup set.
+  virtual backup_proto::StatusPtr GetBackupSet(
+      const std::string& name,
+      backup_proto::BackupSetMessage& set_ref,
+      const Ice::Current& current);
 
  private:
   // Path to the backup sets on the server filesystem.  This path is used for all

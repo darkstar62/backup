@@ -7,6 +7,7 @@
 
 #include "Ice/Ice.h"
 #include "backend/btrfs/btrfs_backend_service_impl.h"
+#include "base/ice.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 
@@ -31,7 +32,8 @@ int main(int argc, char* argv[]) {
   CHECK_NE("", FLAGS_backend_path) << "Must specify a valid backup store path";
   CHECK_LT(0, FLAGS_port) << "Bad port number specified";
 
-  ic = Ice::initialize(argc, argv);
+  ic = InitializeIce(argc, argv);
+
   ostringstream host_port_stream;
   host_port_stream << "default -p " << FLAGS_port;
   Ice::ObjectAdapterPtr adapter =

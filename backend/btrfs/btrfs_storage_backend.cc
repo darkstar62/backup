@@ -10,12 +10,15 @@
 #include "backend/btrfs/btrfs_backend_service.proto.h"
 #include "backend/btrfs/btrfs_backup_set.h"
 #include "backend/btrfs/btrfs_storage_backend.h"
+#include "backend/btrfs/status.proto.h"
+#include "backend/btrfs/status_impl.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 
 using backup_proto::BackupSetList;
 using backup_proto::BackupSetMessage;
 using backup_proto::BtrfsBackendServicePrx;
+using backup_proto::StatusPtr;
 using std::ostringstream;
 using std::string;
 using std::vector;
@@ -59,14 +62,27 @@ vector<BackupSet*> BtrfsStorageBackend::EnumerateBackupSets() {
 bool BtrfsStorageBackend::CreateBackupSet(const string name,
                                           BackupSet** backup_set) {
   BackupSetMessage msg;
-  bool retval = service_->CreateBackupSet(name, msg);
-  if (!retval) {
-    return retval;
+  StatusPtr retval = service_->CreateBackupSet(name, msg);
+  if (!retval->ok()) {
+    LOG(ERROR) << "Error creating backup: " << retval->ToString();
+    return false;
   }
 
   BtrfsBackupSet* set = new BtrfsBackupSet(msg);
   *backup_set = set;
   return true;
+}
+
+BackupSet* BtrfsStorageBackend::GetBackupSet(const string name) {
+  BackupSetMessage msg;
+  StatusPtr retval = service_->GetBackupSet(name, msg);
+  if (!retval->ok()) {
+    LOG(ERROR) << "Error getting backup set: " << retval->ToString();
+    return NULL;
+  }
+
+  BtrfsBackupSet* set = new BtrfsBackupSet(msg);
+  return set;
 }
 
 }  // namespace backup

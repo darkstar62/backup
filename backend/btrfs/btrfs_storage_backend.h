@@ -41,7 +41,14 @@ class BtrfsStorageBackend : public StorageBackend {
   // representing the set (ownership remains with the StorageBackend), pointed to
   // by the passed pointer and the function returns true.  Otherwise, the pointer
   // is left alone and the function returns false.
+  //
+  // For BTRFS, this simply adds an entry for the backup set in the backup
+  // descriptor -- it does not modify or create any filesystems.
   virtual bool CreateBackupSet(const std::string name, BackupSet** backup_set);
+
+  // Retrieve the backup set with the given name.  If the backup set cannot
+  // be found or an error occurs, this returns NULL.
+  virtual BackupSet* GetBackupSet(std::string name);
 
  private:
   // Host to connect to.
