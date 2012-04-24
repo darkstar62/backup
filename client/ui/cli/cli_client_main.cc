@@ -8,6 +8,17 @@
 using backup::CliMain;
 
 int main(int argc, char* argv[]) {
+  google::SetUsageMessage(
+      "Usage: cli_client <options> <command>\n\n"
+      "Commands:\n"
+      "    list_backup_sets\n"
+      "        List the available backup sets.\n\n"
+      "    create_backup_set <backup set name>\n"
+      "        Create a backup set with the given name.\n\n"
+      "    create_incremental_backup <backup set> <backup name> <size_in_mb>\n"
+      "        Create an incremental backup in the given backup set with at most\n"
+      "        <size_in_mb> megabytes.");
+
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
   google::InstallFailureSignalHandler();
