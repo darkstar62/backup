@@ -3,10 +3,10 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 PROJECT(backup_client_storage_public)
 
-# LIBRARY: backup_backend_public
+# LIBRARY: public
     ADD_LIBRARY(
-        backup_backend_public
+        backend.public
 	        backup.h
-           backup_set.h
+            backup_set.h
 	        file_list.h)
 
