@@ -42,6 +42,7 @@ find_path( ICE_HOME_INCLUDE_ICE Ice.h
   /opt/Ice-3.5/include/Ice
   /opt/Ice-3.4/include/Ice
   /opt/Ice-3.4.1/include/Ice
+  /opt/Ice-3.4.2/include/Ice
   # some people may manually choose to install Ice here
   /usr/local/include/Ice
   # windows
@@ -66,7 +67,10 @@ if( ICE_HOME_INCLUDE_ICE )
     # include and lib dirs are easy
     set( ICE_INCLUDE_DIR ${ICE_HOME}/include )
     set( ICE_LIBRARY_DIR ${ICE_HOME}/lib )
-    
+
+    include_directories( ${ICE_INCLUDE_DIR} )
+    link_directories( ${ICE_LIBRARY_DIR} )
+
     # Slice files are often installed elsewhere
     find_path( ICE_SLICE_ICE Communicator.ice
         # installation selected by user
