@@ -8,8 +8,14 @@
 #include <string>
 #include <vector>
 
-#include "backend/btrfs/btrfs_backend_service.proto.h"
+#include "Ice/Ice.h"
+#include "base/macros.h"
+#include "backend/btrfs/backup_descriptor.proto.h"
+#include "backend/btrfs/status.proto.h"
+#include "backend/btrfs/status_impl.h"
 #include "backend/public/backup_set.h"
+#include "boost/filesystem.hpp"
+#include "glog/logging.h"
 
 namespace backup {
 
@@ -19,16 +25,20 @@ class Backup;
 // on a remote server.
 class BtrfsBackupSet : public BackupSet {
  public:
-  BtrfsBackupSet(const backup_proto::BackupSetMessage& set_msg)
-      : BackupSet(set_msg.name) {}
+  BtrfsBackupSet(backup_proto::BackupSetPrx set_msg)
+      : BackupSet(set_msg->get_name()),
+        server_set_(set_msg) {}
   virtual ~BtrfsBackupSet() {}
+
+  // Initialize the backup set.  This does housekeeping things like creating
+  // the backup set descriptor if it doesn't exist, and verifying integrity
+  // of the descriptor against the backup itself (quickly).
+  bool Init();
 
   // Enumerate all backup increments stored in this backup set.  The
   // returned vector contains const pointers to all backup instances; ownership
   // of the backup instances remains with the BackupSet.
-  virtual std::vector<Backup*> EnumerateBackups() {
-    return std::vector<Backup*>();
-  }
+  virtual std::vector<Backup*> EnumerateBackups();
 
   // Attempt to create an incremental backup on the storage backend representing
   // the passed backup parameters.  This doesn't actually initiate a backup;
@@ -48,6 +58,47 @@ class BtrfsBackupSet : public BackupSet {
   // Obviously compression will bring the requirements down, but we don't
   // rely on that always working.
   virtual Backup* CreateFullBackup(const BackupOptions& options);
+
+ private:
+  // Server-side backup set representation.  This contains methods that we'll
+  // need to be able to communicate client-side actions to the server.
+  backup_proto::BackupSetPrx server_set_;
+
+  DISALLOW_COPY_AND_ASSIGN(BtrfsBackupSet);
+};
+
+class BackupSetServerImpl : public backup_proto::BackupSet {
+ public:
+  BackupSetServerImpl() : backup_proto::BackupSet() {}
+  virtual ~BackupSetServerImpl() {}
+
+  //////////////////////////////////////////////////////////////////////////////
+  // The following functions act on the object on the **SERVER** side.
+
+  // Initialize the backup set descriptor and get the server-side backup
+  // set ready to use client-side.
+  backup_proto::StatusPtr Init(const Ice::Current& /* current */);
+
+  // Accessors for the name.  None of the data members are available to the
+  // client, so we access it via RPC accessors.
+  std::string get_name(const Ice::Current& /* current */) { return mName; }
+  void set_name(const std::string& name, const Ice::Current& /* current */) {
+    mName = name;
+  }
+};
+
+class BackupSetFactory : public Ice::ObjectFactory {
+ public:
+  virtual Ice::ObjectPtr create(const std::string& type) {
+    CHECK_EQ(backup_proto::BackupSet::ice_staticId(), type);
+    return new BackupSetServerImpl;
+  }
+  virtual void destroy() {}
+
+  static void Init(Ice::CommunicatorPtr ic) {
+    ic->addObjectFactory(new BackupSetFactory,
+                         backup_proto::BackupSet::ice_staticId());
+  }
 };
 
 }  // namespace backup

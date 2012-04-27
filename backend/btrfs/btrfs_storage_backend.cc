@@ -2,24 +2,22 @@
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
 #include <stdint.h>
-#include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 
+#include "backend/btrfs/backup_descriptor.proto.h"
 #include "backend/btrfs/btrfs_backend_service.proto.h"
 #include "backend/btrfs/btrfs_backup_set.h"
 #include "backend/btrfs/btrfs_storage_backend.h"
 #include "backend/btrfs/status.proto.h"
 #include "backend/btrfs/status_impl.h"
+#include "base/string.h"
+#include "boost/filesystem.hpp"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 
-using backup_proto::BackupSetList;
-using backup_proto::BackupSetMessage;
 using backup_proto::BtrfsBackendServicePrx;
 using backup_proto::StatusPtr;
-using std::ostringstream;
 using std::string;
 using std::vector;
 
@@ -32,9 +30,9 @@ BtrfsStorageBackend::~BtrfsStorageBackend() {
 }
 
 bool BtrfsStorageBackend::Init() {
-  ostringstream service_str;
-  service_str << "BtrfsBackendService:default -h " << host_ << " -p " << port_;
-  Ice::ObjectPrx base = ic_->stringToProxy(service_str.str());
+  Ice::ObjectPrx base = ic_->stringToProxy(
+      "BtrfsBackendService:default -h " + ToString(host_) + " -p " +
+      ToString(port_));
   service_ = BtrfsBackendServicePrx::checkedCast(base);
 
   service_->Ping();
@@ -48,12 +46,17 @@ vector<BackupSet*> BtrfsStorageBackend::EnumerateBackupSets() {
   vector<BackupSet*> backup_sets;
 
   // Send an RPC to the backend to get the backup sets.
-  BackupSetList sets = service_->EnumerateBackupSets();
+  backup_proto::BackupSetPtrList sets = service_->EnumerateBackupSets();
 
-  for (BackupSetList::iterator iter = sets.begin();
+  for (backup_proto::BackupSetPtrList::iterator iter = sets.begin();
        iter != sets.end(); ++iter) {
-    VLOG(3) << "Backup set: " << iter->name;
+    VLOG(3) << "Backup set: " << (*iter)->get_name();
     BtrfsBackupSet* backup_set = new BtrfsBackupSet(*iter);
+    if (!backup_set->Init()) {
+      LOG(WARNING) << "Backup set " << (*iter)->get_name()
+                   << " failed to initialize";
+      continue;
+    }
     backup_sets.push_back(backup_set);
   }
   return backup_sets;
@@ -61,7 +64,7 @@ vector<BackupSet*> BtrfsStorageBackend::EnumerateBackupSets() {
 
 bool BtrfsStorageBackend::CreateBackupSet(const string name,
                                           BackupSet** backup_set) {
-  BackupSetMessage msg;
+  backup_proto::BackupSetPrx msg;
   StatusPtr retval = service_->CreateBackupSet(name, msg);
   if (!retval->ok()) {
     LOG(ERROR) << "Error creating backup: " << retval->ToString();
@@ -74,7 +77,7 @@ bool BtrfsStorageBackend::CreateBackupSet(const string name,
 }
 
 BackupSet* BtrfsStorageBackend::GetBackupSet(const string name) {
-  BackupSetMessage msg;
+  backup_proto::BackupSetPrx msg;
   StatusPtr retval = service_->GetBackupSet(name, msg);
   if (!retval->ok()) {
     LOG(ERROR) << "Error getting backup set: " << retval->ToString();
@@ -82,6 +85,12 @@ BackupSet* BtrfsStorageBackend::GetBackupSet(const string name) {
   }
 
   BtrfsBackupSet* set = new BtrfsBackupSet(msg);
+  if (!set->Init()) {
+    delete set;
+    LOG(ERROR) << "Error initializing backup set";
+    return NULL;
+  }
+
   return set;
 }
 

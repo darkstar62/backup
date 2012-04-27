@@ -2,40 +2,42 @@
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
 #include <fstream>
-#include <iostream>
-#include <sstream>
 #include <vector>
 
 #include "Ice/Ice.h"
+#include "IceUtil/UUID.h"
 #include "backend/btrfs/btrfs_backend_service.proto.h"
 #include "backend/btrfs/btrfs_backend_service_impl.h"
+#include "backend/btrfs/btrfs_backup_set.h"
 #include "backend/btrfs/status.proto.h"
 #include "backend/btrfs/status_impl.h"
+#include "base/string.h"
 #include "boost/filesystem.hpp"
 #include "glog/logging.h"
 
 using backup_proto::StatusImpl;
 using backup_proto::StatusPtr;
+using backup_proto::kStatusBackupSetCreateFailed;
 using backup_proto::kStatusBackupSetNotFound;
 using backup_proto::kStatusOk;
 using boost::filesystem::path;
 using std::fstream;
 using std::ios;
-using std::ostringstream;
 using std::string;
 using std::vector;
 
 namespace backup {
 
-BtrfsBackendServiceImpl::BtrfsBackendServiceImpl(Ice::CommunicatorPtr ic,
-                                                 const std::string& path)
+BtrfsBackendServiceImpl::BtrfsBackendServiceImpl(
+    Ice::CommunicatorPtr ic, Ice::ObjectAdapterPtr adapter,
+    const std::string& path)
     : BtrfsBackendService(),
-      path_(path),
-      ic_(ic) {
+      path_(boost::filesystem::path(path)),
+      ic_(ic),
+      adapter_(adapter) {
   // Verify the path given exists and is a directory.
-  ::path fs_path(path_);
-  if (!boost::filesystem::exists(fs_path) ||
-      !boost::filesystem::is_directory(fs_path)) {
+  if (!boost::filesystem::exists(path_) ||
+      !boost::filesystem::is_directory(path_)) {
     LOG(FATAL) << "Specified path doesn't exist or isn't a directory.";
   }
 
@@ -44,11 +46,12 @@ BtrfsBackendServiceImpl::BtrfsBackendServiceImpl(Ice::CommunicatorPtr ic,
 
 BtrfsBackendServiceImpl::~BtrfsBackendServiceImpl() {
   LOG(INFO) << "Creating backup descriptor";
-  path desc_path = path(path_) / "backup_descriptor.cfg";
+  path desc_path = path_ / "backup_descriptor.cfg";
 
   // Convert the list of backup sets to a data stream we can write.
   Ice::OutputStreamPtr out = Ice::createOutputStream(ic_);
   out->write(backup_descriptor_);
+  out->writePendingObjects();
 
   vector<uint8_t> out_stream;
   out->finished(out_stream);
@@ -60,7 +63,7 @@ BtrfsBackendServiceImpl::~BtrfsBackendServiceImpl() {
 
 bool BtrfsBackendServiceImpl::Init() {
   // Check if we have a backup directory descriptor file.
-  path desc_path = path(path_) / "backup_descriptor.cfg";
+  path desc_path = path_ / "backup_descriptor.cfg";
   if (boost::filesystem::exists(desc_path)) {
     LOG(INFO) << "Reading backup descriptor";
     fstream input(desc_path.string().c_str(), ios::in | ios::binary);
@@ -71,6 +74,7 @@ bool BtrfsBackendServiceImpl::Init() {
 
     Ice::InputStreamPtr in = Ice::createInputStream(ic_, in_stream);
     in->read(backup_descriptor_);
+    in->readPendingObjects();
   }
 
   return true;
@@ -81,45 +85,60 @@ void BtrfsBackendServiceImpl::Ping(const Ice::Current& current) {
   // Nothing to do here, we just return.
 }
 
-backup_proto::BackupSetList BtrfsBackendServiceImpl::EnumerateBackupSets(
+backup_proto::BackupSetPtrList BtrfsBackendServiceImpl::EnumerateBackupSets(
     const Ice::Current& current) {
   VLOG(3) << "EnumerateBackupSets() requested";
   // Return a list of all the backup sets we're managing.
-  backup_proto::BackupSetList retval;
+  backup_proto::BackupSetPtrList retval;
   for (int i = 0; i < backup_descriptor_.backup_sets.size(); ++i) {
-    backup_proto::BackupSetMessage msg = backup_descriptor_.backup_sets.at(i);
-    retval.push_back(msg);
+    backup_proto::BackupSetPtr msg = backup_descriptor_.backup_sets.at(i);
+    retval.push_back(GetProxyById<backup_proto::BackupSet>(msg, msg->id));
   }
   return retval;
 }
 
 StatusPtr BtrfsBackendServiceImpl::CreateBackupSet(
-    const string& name, backup_proto::BackupSetMessage& set_ref,
+    const string& name, backup_proto::BackupSetPrx& set_ref,
     const Ice::Current& current) {
-  backup_proto::BackupSetMessage proto_set;
-  proto_set.name = name;
-  proto_set.id = backup_descriptor_.next_id++;
+  // Create a new directory in the backup set directory, and initialize the
+  // backup set there.  From this point on, the backup set itself manages
+  // the contents of the directory, including its own backup set descriptor.
+  string new_uuid = IceUtil::generateUUID();
+  path backup_set_path = path_ / new_uuid;
+  if (!boost::filesystem::create_directory(backup_set_path)) {
+    LOG(ERROR) << "Could not create directory for new backup set: "
+               << backup_set_path.native();
+    return new StatusImpl(
+        kStatusBackupSetCreateFailed,
+        "Could not create directory for new backup set");
+  }
+
+  // Create all the goo in the backup descriptor
+  backup_proto::BackupSetPtr proto_set = new BackupSetServerImpl;
+  proto_set->mName = name;
+  proto_set->id.name = new_uuid;
+  proto_set->mPath = backup_set_path.string();
   backup_descriptor_.backup_sets.push_back(proto_set);
 
-  set_ref = proto_set;
-  return StatusImpl::MakeStatusPtr(kStatusOk);
+  // Return the created backup set proto
+  set_ref = GetProxyById<backup_proto::BackupSet>(proto_set, proto_set->id);
+  return new StatusImpl(kStatusOk);
 }
 
 StatusPtr BtrfsBackendServiceImpl::GetBackupSet(
-    const string& name, backup_proto::BackupSetMessage& set_ref,
+    const string& name, backup_proto::BackupSetPrx& set_ref,
     const Ice::Current& current) {
   for (backup_proto::BackupSetList::iterator iter =
            backup_descriptor_.backup_sets.begin();
        iter != backup_descriptor_.backup_sets.end();
        ++iter) {
-    if ((*iter).name == name) {
-      set_ref = *iter;
-      return StatusImpl::MakeStatusPtr(kStatusOk);
+    if ((*iter)->mName == name) {
+      set_ref = GetProxyById<backup_proto::BackupSet>(*iter, (*iter)->id);
+      return new StatusImpl(kStatusOk);
     }
   }
-  return StatusImpl::MakeStatusPtr(
-      kStatusBackupSetNotFound,
-      "Backup set specified could not be found");
+  return new StatusImpl(kStatusBackupSetNotFound,
+                        "Backup set specified could not be found");
 }
 
 }  // namespace backup

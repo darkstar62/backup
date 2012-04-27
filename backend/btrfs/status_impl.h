@@ -21,12 +21,6 @@ class StatusImpl : public Status {
   StatusImpl(StatusEnum type, std::string reason="")
       : Status(type, reason) {}
 
-  // Convenience function to create a StatusPtr from a type and reason.  Useful
-  // in returning values from functions.
-  static StatusPtr MakeStatusPtr(StatusEnum type, std::string reason="") {
-    return StatusPtr(new StatusImpl(type, reason));
-  }
-
   // Return whether the status object represents an OK response or not.  If the
   // status is OK, this returns true; otherwise false is returned (i.e. anything
   // not kStatusOK is false).

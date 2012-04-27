@@ -40,9 +40,11 @@ int main(int argc, char* argv[]) {
       ic->createObjectAdapterWithEndpoints("BtrfsBackendServiceAdapter",
                                            host_port_stream.str());
 
-  BtrfsBackendServiceImpl* service = new BtrfsBackendServiceImpl(ic, FLAGS_backend_path);
+  BtrfsBackendServiceImpl* service = new BtrfsBackendServiceImpl(
+      ic, adapter, FLAGS_backend_path);
   CHECK(service->Init());
 
+  // ObjectPtr gains ownership of the service -- DON'T delete it.
   Ice::ObjectPtr object = service;
   adapter->add(object, ic->stringToIdentity("BtrfsBackendService"));
 
