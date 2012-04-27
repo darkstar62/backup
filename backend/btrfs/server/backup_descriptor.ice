@@ -5,7 +5,7 @@
 #define BACKUP_BACKEND_BTRFS_BACKUP_DESCRIPTOR_ICE_
 
 #include <Ice/Identity.ice>
-#include <backend/btrfs/status.ice>
+#include <backend/btrfs/proto/status.ice>
 
 module backup_proto {
 

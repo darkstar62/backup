@@ -1,16 +1,16 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
-#ifndef BACKUP_BACKEND_BTRFS_BTRFS_BACKEND_SERVICE_IMPL_H_
-#define BACKUP_BACKEND_BTRFS_BTRFS_BACKEND_SERVICE_IMPL_H_
+#ifndef BACKUP_BACKEND_BTRFS_SERVER_BTRFS_BACKEND_SERVICE_IMPL_H_
+#define BACKUP_BACKEND_BTRFS_SERVER_BTRFS_BACKEND_SERVICE_IMPL_H_
 
 #include <string>
 #include <vector>
 
 #include "Ice/Ice.h"
-#include "backend/btrfs/backup_descriptor.proto.h"
-#include "backend/btrfs/btrfs_backend_service.proto.h"
-#include "backend/btrfs/status.proto.h"
-#include "backend/btrfs/status_impl.h"
+#include "backend/btrfs/proto/status.proto.h"
+#include "backend/btrfs/proto/status_impl.h"
+#include "backend/btrfs/server/backup_descriptor.proto.h"
+#include "backend/btrfs/server/btrfs_backend_service.proto.h"
 #include "base/macros.h"
 #include "boost/filesystem.hpp"
 
@@ -87,4 +87,4 @@ typename T::ProxyType BtrfsBackendServiceImpl::GetProxyById(
 }
 
 }  // namespace backup
-#endif  // BACKUP_BACKEND_BTRFS_BTRFS_BACKEND_SERVICE_IMPL_H_
+#endif  // BACKUP_BACKEND_BTRFS_SERVER_BTRFS_BACKEND_SERVICE_IMPL_H_

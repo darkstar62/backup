@@ -1,13 +1,13 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
-#ifndef BACKUP_BACKEND_BTRFS_STATUS_IMPL_H_
-#define BACKUP_BACKEND_BTRFS_STATUS_IMPL_H_
+#ifndef BACKUP_BACKEND_BTRFS_PROTO_STATUS_IMPL_H_
+#define BACKUP_BACKEND_BTRFS_PROTO_STATUS_IMPL_H_
 
 #include <iostream>
 #include <sstream>
 
 #include "Ice/Ice.h"
-#include "backend/btrfs/status.proto.h"
+#include "backend/btrfs/proto/status.proto.h"
 #include "glog/logging.h"
 
 namespace backup_proto {
@@ -45,4 +45,4 @@ class StatusFactory : public Ice::ObjectFactory {
 
 }  // namespace backup_proto
 
-#endif  // BACKUP_BACKEND_BTRFS_STATUS_IMPL_H_
+#endif  // BACKUP_BACKEND_BTRFS_PROTO_STATUS_IMPL_H_

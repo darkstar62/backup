@@ -15,10 +15,10 @@ FIND_PACKAGE(Ice REQUIRED)
             cli_client_main.cc)
     ADD_DEPENDENCIES(
         cli_client
-            backend.btrfs.storage_backend)
+            backend.btrfs.client.storage_backend)
     TARGET_LINK_LIBRARIES(
         cli_client
-            backend.btrfs.storage_backend
+            backend.btrfs.client.storage_backend
             ${Boost_SYSTEM_LIBRARY}
             ${GFLAGS_LIBRARY}
             ${GFLAGS_LIBRARY}

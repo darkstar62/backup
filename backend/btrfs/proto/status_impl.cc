@@ -5,8 +5,8 @@
 #include <sstream>
 #include <string>
 
-#include "backend/btrfs/status.proto.h"
-#include "backend/btrfs/status_impl.h"
+#include "backend/btrfs/proto/status.proto.h"
+#include "backend/btrfs/proto/status_impl.h"
 
 using std::ostringstream;
 using std::string;

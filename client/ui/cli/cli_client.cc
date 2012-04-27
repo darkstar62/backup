@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "Ice/Ice.h"
-#include "backend/btrfs/btrfs_storage_backend.h"
+#include "backend/btrfs/client/btrfs_storage_backend.h"
 #include "backend/public/backup_set.h"
 #include "base/ice.h"
 #include "client/ui/cli/cli_client.h"

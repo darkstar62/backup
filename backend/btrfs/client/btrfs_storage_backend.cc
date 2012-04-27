@@ -5,12 +5,12 @@
 #include <string>
 #include <vector>
 
-#include "backend/btrfs/backup_descriptor.proto.h"
-#include "backend/btrfs/btrfs_backend_service.proto.h"
-#include "backend/btrfs/btrfs_backup_set.h"
-#include "backend/btrfs/btrfs_storage_backend.h"
-#include "backend/btrfs/status.proto.h"
-#include "backend/btrfs/status_impl.h"
+#include "backend/btrfs/client/btrfs_backup_set.h"
+#include "backend/btrfs/client/btrfs_storage_backend.h"
+#include "backend/btrfs/proto/status.proto.h"
+#include "backend/btrfs/proto/status_impl.h"
+#include "backend/btrfs/server/backup_descriptor.proto.h"
+#include "backend/btrfs/server/btrfs_backend_service.proto.h"
 #include "base/string.h"
 #include "boost/filesystem.hpp"
 #include "gflags/gflags.h"

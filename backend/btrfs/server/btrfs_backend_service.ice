@@ -4,8 +4,8 @@
 #ifndef BACKUP_BACKEND_BTRFS_BTRFS_BACKEND_SERVICE_ICE_
 #define BACKUP_BACKEND_BTRFS_BTRFS_BACKEND_SERVICE_ICE_
 
-#include <backend/btrfs/backup_descriptor.ice>
-#include <backend/btrfs/status.ice>
+#include <backend/btrfs/proto/status.ice>
+#include <backend/btrfs/server/backup_descriptor.ice>
 
 module backup_proto {
 

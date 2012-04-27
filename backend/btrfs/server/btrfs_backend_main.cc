@@ -6,7 +6,7 @@
 #include <sstream>
 
 #include "Ice/Ice.h"
-#include "backend/btrfs/btrfs_backend_service_impl.h"
+#include "backend/btrfs/server/btrfs_backend_service_impl.h"
 #include "base/ice.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"

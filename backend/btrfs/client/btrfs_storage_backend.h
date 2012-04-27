@@ -1,14 +1,14 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
-#ifndef BACKUP_BACKEND_BTRFS_BTRFS_STORAGE_BACKEND_H_
-#define BACKUP_BACKEND_BTRFS_BTRFS_STORAGE_BACKEND_H_
+#ifndef BACKUP_BACKEND_BTRFS_CLIENT_BTRFS_STORAGE_BACKEND_H_
+#define BACKUP_BACKEND_BTRFS_CLIENT_BTRFS_STORAGE_BACKEND_H_
 
 #include <stdint.h>
 #include <string>
 #include <vector>
 
 #include "Ice/Ice.h"
-#include "backend/btrfs/btrfs_backend_service.proto.h"
+#include "backend/btrfs/server/btrfs_backend_service.proto.h"
 #include "backend/public/storage_backend.h"
 #include "base/macros.h"
 
@@ -65,4 +65,4 @@ class BtrfsStorageBackend : public StorageBackend {
 };
 
 }  // namespace backup
-#endif  // BACKUP_BACKEND_BTRFS_BTRFS_STORAGE_BACKEND_H_
+#endif  // BACKUP_BACKEND_BTRFS_CLIENT_BTRFS_STORAGE_BACKEND_H_
