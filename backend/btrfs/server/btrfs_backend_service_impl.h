@@ -46,7 +46,7 @@ class BtrfsBackendServiceImpl : public backup_proto::BtrfsBackendService {
 
   // Retrieve an existing backup set.
   virtual backup_proto::StatusPtr GetBackupSet(
-      const std::string& name,
+      const std::string& id,
       backup_proto::BackupSetPrx& set_ref,
       const Ice::Current& current);
 
@@ -60,7 +60,7 @@ class BtrfsBackendServiceImpl : public backup_proto::BtrfsBackendService {
   // operations the server needs to perform.
   const boost::filesystem::path path_;
 
-  backup_proto::BackupDescriptor backup_descriptor_;
+  backup_proto::BackupDescriptorPtr backup_descriptor_;
 
   Ice::CommunicatorPtr ic_;
   Ice::ObjectAdapterPtr adapter_;

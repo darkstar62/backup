@@ -18,7 +18,8 @@ class BackupSetServerImpl : public backup_proto::BackupSet {
  public:
   BackupSetServerImpl(Ice::CommunicatorPtr ic)
       : backup_proto::BackupSet(),
-        ic_(CHECK_NOTNULL(ic.get())) {}
+        ic_(CHECK_NOTNULL(ic.get())),
+        initialized_(false) {}
   virtual ~BackupSetServerImpl();
 
   // Initialize the backup set descriptor and get the server-side backup
@@ -31,6 +32,14 @@ class BackupSetServerImpl : public backup_proto::BackupSet {
       const backup_proto::BackupOptions& options,
       backup_proto::BackupPtr& backup_ref,
       const Ice::Current&);
+
+  // Enumerate the backups in the set.
+  backup_proto::StatusPtr EnumerateBackups(
+      backup_proto::BackupList& backup_list_ref,
+      const Ice::Current&);
+
+  // Accessors for the ID.
+  std::string get_id(const Ice::Current&) { return id.name; }
 
   // Accessors for the name.  None of the data members are available to the
   // client, so we access it via RPC accessors.
@@ -47,6 +56,9 @@ class BackupSetServerImpl : public backup_proto::BackupSet {
 
   // Backup set descriptor.
   backup_proto::BackupSetDescriptor descriptor_;
+
+  // Whether we've initialied or not
+  bool initialized_;
 };
 
 // BackupSet factory to help ICE initialize the objects.
@@ -54,7 +66,8 @@ class BackupSetFactory : public Ice::ObjectFactory {
  public:
   virtual Ice::ObjectPtr create(const std::string& type) {
     CHECK_EQ(backup_proto::BackupSet::ice_staticId(), type);
-    return new BackupSetServerImpl(ic_);
+    BackupSetServerImpl* obj = new BackupSetServerImpl(ic_);
+    return obj;
   }
   virtual void destroy() {}
 

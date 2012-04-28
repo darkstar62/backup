@@ -76,9 +76,9 @@ bool BtrfsStorageBackend::CreateBackupSet(const string name,
   return true;
 }
 
-BackupSet* BtrfsStorageBackend::GetBackupSet(const string name) {
+BackupSet* BtrfsStorageBackend::GetBackupSet(const string id) {
   backup_proto::BackupSetPrx msg;
-  StatusPtr retval = service_->GetBackupSet(name, msg);
+  StatusPtr retval = service_->GetBackupSet(id, msg);
   if (!retval->ok()) {
     LOG(ERROR) << "Error getting backup set: " << retval->ToString();
     return NULL;

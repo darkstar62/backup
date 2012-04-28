@@ -22,11 +22,11 @@ interface BtrfsBackendService {
   // returns false.
   Status CreateBackupSet(string name, out BackupSet* set);
 
-  // Retrieve the backup set with the given name.  If successful, the passed
+  // Retrieve the backup set with the given ID.  If successful, the passed
   // BackupSetMessage is filled withthe details of the set and the function
   // returns true.  Otherwise, the passed message is left alone and the function
-  // returns false.
-  Status GetBackupSet(string name, out BackupSet* set);
+  // returns false.  IDs can be obtained by enumerating the backup sets.
+  Status GetBackupSet(string id, out BackupSet* set);
 };
 
 };  // module backend

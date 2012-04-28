@@ -1,6 +1,7 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
+#include <time.h>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -15,6 +16,7 @@
 
 using backup_proto::StatusImpl;
 using backup_proto::StatusPtr;
+using backup_proto::kBackupTypeIncremental;
 using backup_proto::kStatusBackupCreateFailed;
 using backup_proto::kStatusBackupSetNotFound;
 using backup_proto::kStatusOk;
@@ -47,6 +49,10 @@ BackupSetServerImpl::~BackupSetServerImpl() {
 }
 
 StatusPtr BackupSetServerImpl::Init(const Ice::Current&) {
+  if (initialized_) {
+    return new StatusImpl(kStatusOk);
+  }
+
   // Look for our backup set -- it'll be in the path given to us by the
   // backend.
   path set_path(mPath);
@@ -79,6 +85,7 @@ StatusPtr BackupSetServerImpl::Init(const Ice::Current&) {
     in->readPendingObjects();
   }
 
+  initialized_ = true;
   return new StatusImpl(kStatusOk);
 }
 
@@ -88,6 +95,39 @@ StatusPtr BackupSetServerImpl::CreateBackup(
     backup_proto::BackupPtr& backup_ref,
     const Ice::Current&) {
   LOG(INFO) << mName << ": Create backup: " << options.description;
+
+  // Consistency check the backup parameters -- incremental backups require
+  // a previous backup having been performed.  We take the latest backup as
+  // the basis for the incremental.
+  string increment_of_id = "_INVALID_";
+  if (type == kBackupTypeIncremental) {
+    // Find the most recent backup and use its ID.
+    uint64_t max_time = 0;
+    backup_proto::BackupList::iterator max_iter = descriptor_.backups.end();
+
+    for (backup_proto::BackupList::iterator iter = descriptor_.backups.begin();
+         iter != descriptor_.backups.end(); ++iter) {
+      if ((*iter)->create_time > max_time) {
+        max_time = (*iter)->create_time;
+        max_iter = iter;
+      }
+    }
+
+    if (max_iter == descriptor_.backups.end()) {
+      // No latest backup was found -- probably we don't have any backups
+      // at all.
+      CHECK_EQ(0, descriptor_.backups.size())
+          << mName << ": Corrupt backup descriptor";
+      LOG(ERROR) << mName << ": Incremental backup requested, but no existing "
+                 << "backups found";
+      return new StatusImpl(
+          kStatusBackupCreateFailed,
+          "Incremental backup requested without existing backup");
+    }
+
+    VLOG(3) << mName << ": Latest backup ID: " << (*max_iter)->id.name;
+    increment_of_id = (*max_iter)->id.name;
+  }
 
   // Create a new directory in the backup set directory, and initialize the
   // backup set there.  From this point on, the backup set itself manages
@@ -107,12 +147,21 @@ StatusPtr BackupSetServerImpl::CreateBackup(
   proto_backup->description = options.description;
   proto_backup->type = type;
   proto_backup->id.name = new_uuid;
-  proto_backup->increment_of_id.name = "foo";
+  proto_backup->increment_of_id.name = increment_of_id;
+  proto_backup->create_time = time(NULL);
   descriptor_.backups.push_back(proto_backup);
+  LOG(INFO) << "Now at " << descriptor_.backups.size() << " backups";
 
   // Return the created backup set proto
   //backup_ref = GetProxyById<backup_proto::BackupSet>(proto_set, proto_set->id);
   backup_ref = proto_backup;
+  return new StatusImpl(kStatusOk);
+}
+
+StatusPtr BackupSetServerImpl::EnumerateBackups(
+    backup_proto::BackupList& backup_list_ref,
+    const Ice::Current&) {
+  backup_list_ref = descriptor_.backups;
   return new StatusImpl(kStatusOk);
 }
 

@@ -18,6 +18,9 @@ class Backup {
   // Unique identity of the backup set.
   Ice::Identity id;
 
+  // Creation time of the backup
+  long create_time;
+
   // Description of the backup
   string description;
 
@@ -59,7 +62,12 @@ class BackupSet {
   Status CreateBackup(BackupType type, BackupOptions options,
                       out Backup backup_ref);
 
+  // Enumerate the backups in the set.
+  Status EnumerateBackups(out BackupList backup_list_ref);
+
   // Various accessors for the client-side.
+  string get_id();
+
   string get_name();
   void set_name(string name);
 
@@ -80,12 +88,9 @@ sequence<BackupSet> BackupSetList;
 
 // The BackupDescriptor is the overall description of a directory containing
 // one or more backup sets.
-struct BackupDescriptor {
+class BackupDescriptor {
   // List of all backup sets managed by the backend.
   BackupSetList backup_sets;
-
-  // The next ID to assign to a new backup set.
-  long next_id;
 };
 
 };  // module backup_proto

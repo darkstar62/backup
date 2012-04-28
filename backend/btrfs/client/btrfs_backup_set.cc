@@ -1,9 +1,9 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
-#include <string>
 #include <vector>
 
+#include "backend/btrfs/client/btrfs_backup.h"
 #include "backend/btrfs/client/btrfs_backup_set.h"
 #include "backend/btrfs/proto/status.proto.h"
 #include "backend/public/backup.h"
@@ -11,9 +11,6 @@
 #include "glog/logging.h"
 
 using backup_proto::StatusPtr;
-using backup_proto::kBackupTypeFull;
-using backup_proto::kBackupTypeIncremental;
-using std::string;
 using std::vector;
 
 namespace backup {
@@ -30,9 +27,25 @@ bool BtrfsBackupSet::Init() {
   return true;
 }
 
-std::vector<Backup*> BtrfsBackupSet::EnumerateBackups() {
+vector<Backup*> BtrfsBackupSet::EnumerateBackups() {
   // The backups are stored in the backup descriptor for the backup set.
-  return vector<Backup*>();
+  backup_proto::BackupList backup_list;
+  StatusPtr retval = server_set_->EnumerateBackups(backup_list);
+  if (!retval->ok()) {
+    LOG(ERROR) << description() << ": Could not enumerate backups: "
+               << retval->ToString();
+    // TODO: Implement error propogation
+    return vector<Backup*>();
+  }
+
+  vector<Backup*> backups;
+  for (backup_proto::BackupList::iterator iter = backup_list.begin();
+       iter != backup_list.end(); ++iter) {
+    BtrfsBackup* backup = new BtrfsBackup(*iter);
+    backups.push_back(backup);
+  }
+
+  return backups;
 }
 
 Backup* BtrfsBackupSet::CreateIncrementalBackup(const BackupOptions& options) {
@@ -44,17 +57,19 @@ Backup* BtrfsBackupSet::CreateIncrementalBackup(const BackupOptions& options) {
   btrfs_options.description = options.description();
   btrfs_options.size_in_mb = options.size_in_mb();
 
-  backup_proto::BackupPtr backup;
+  backup_proto::BackupPtr backup_proto;
   StatusPtr retval = server_set_->CreateBackup(
-      kBackupTypeIncremental, btrfs_options, backup);
+      backup_proto::kBackupTypeIncremental, btrfs_options, backup_proto);
   if (!retval->ok()) {
     LOG(ERROR) << description() << ": Could not create backup: "
                << retval->ToString();
     return NULL;
   }
 
+  BtrfsBackup* backup = new BtrfsBackup(backup_proto);
+
   LOG(INFO) << "Success";
-  return NULL;
+  return backup;
 }
 
 Backup* BtrfsBackupSet::CreateFullBackup(const BackupOptions& options) {
@@ -62,17 +77,19 @@ Backup* BtrfsBackupSet::CreateFullBackup(const BackupOptions& options) {
   btrfs_options.description = options.description();
   btrfs_options.size_in_mb = options.size_in_mb();
 
-  backup_proto::BackupPtr backup;
+  backup_proto::BackupPtr backup_proto;
   StatusPtr retval = server_set_->CreateBackup(
-      kBackupTypeFull, btrfs_options, backup);
+      backup_proto::kBackupTypeFull, btrfs_options, backup_proto);
   if (!retval->ok()) {
     LOG(ERROR) << description() << ": Could not create backup: "
                << retval->ToString();
     return NULL;
   }
 
+  BtrfsBackup* backup = new BtrfsBackup(backup_proto);
+
   LOG(INFO) << "Success";
-  return NULL;
+  return backup;
 }
 
 }  // namespace backup

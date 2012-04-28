@@ -19,6 +19,15 @@ class BackupOptions {
       : description_(""), size_in_mb_(0) {}
   ~BackupOptions() {}
 
+  // Set/get the ID of the backup.  This is only used when returning
+  // a Backup* object to the client -- setting this when creating
+  // the backup backend-side does nothing.
+  BackupOptions& set_id(const std::string& id) {
+    id_ = id;
+    return *this;
+  }
+  const std::string id() const { return id_; }
+
   // Set/get the friendly description of the backup.
   BackupOptions& set_description(const std::string& description) {
     description_ = description;
@@ -34,6 +43,7 @@ class BackupOptions {
   const uint64_t size_in_mb() const { return size_in_mb_; }
 
  private:
+  std::string id_;
   std::string description_;
   uint64_t size_in_mb_;
 };
@@ -44,7 +54,10 @@ class BackupOptions {
 // specific storage backend functionality.
 class BackupSet {
  public:
-  BackupSet(const std::string& description) : description_(description) {}
+  BackupSet(const std::string& id,
+            const std::string& description)
+      : id_(id),
+        description_(description) {}
   virtual ~BackupSet() {}
 
   // Enumerate all backup increments stored in this backup set.  The
@@ -66,10 +79,17 @@ class BackupSet {
   // Similar to CreateIncrementalBackup(), but this creates a full backup.
   virtual Backup* CreateFullBackup(const BackupOptions& options) = 0;
 
+  // Return the ID of this backup set.
+  const std::string id() const { return id_; }
+
   // Return the description of this backup set.
   const std::string description() const { return description_; }
 
  private:
+  // ID of the backup set.  Backup sets can have the same name, but IDs
+  // must be unique.
+  const std::string id_;
+
   // Description of this backup set.
   const std::string description_;
 };

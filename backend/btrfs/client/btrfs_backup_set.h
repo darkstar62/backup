@@ -5,7 +5,6 @@
 #define BACKUP_BACKEND_BTRFS_CLIENT_BTRFS_BACKUP_SET_H_
 
 #include <stdint.h>
-#include <string>
 #include <vector>
 
 #include "Ice/Ice.h"
@@ -22,7 +21,7 @@ class Backup;
 class BtrfsBackupSet : public BackupSet {
  public:
   BtrfsBackupSet(backup_proto::BackupSetPrx set_msg)
-      : BackupSet(set_msg->get_name()),
+      : BackupSet(set_msg->get_id(), set_msg->get_name()),
         server_set_(set_msg) {}
   virtual ~BtrfsBackupSet() {}
 

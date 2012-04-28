@@ -28,6 +28,9 @@ string StatusImpl::ToString(const Ice::Current& current) {
     case kStatusBackupSetCreateFailed:
       str_reason << "Backup set create failed: ";
       break;
+    case kStatusBackupCreateFailed:
+      str_reason << "Backup create failed: ";
+      break;
     default:
       LOG(FATAL) << "Internal error: status id should not be " << id;
       break;

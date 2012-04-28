@@ -33,6 +33,7 @@ BtrfsBackendServiceImpl::BtrfsBackendServiceImpl(
     const std::string& path)
     : BtrfsBackendService(),
       path_(boost::filesystem::path(path)),
+      backup_descriptor_(new backup_proto::BackupDescriptor),
       ic_(ic),
       adapter_(adapter) {
   // Verify the path given exists and is a directory.
@@ -40,8 +41,6 @@ BtrfsBackendServiceImpl::BtrfsBackendServiceImpl(
       !boost::filesystem::is_directory(path_)) {
     LOG(FATAL) << "Specified path doesn't exist or isn't a directory.";
   }
-
-  backup_descriptor_.next_id = 0;
 }
 
 BtrfsBackendServiceImpl::~BtrfsBackendServiceImpl() {
@@ -90,8 +89,8 @@ backup_proto::BackupSetPtrList BtrfsBackendServiceImpl::EnumerateBackupSets(
   VLOG(3) << "EnumerateBackupSets() requested";
   // Return a list of all the backup sets we're managing.
   backup_proto::BackupSetPtrList retval;
-  for (int i = 0; i < backup_descriptor_.backup_sets.size(); ++i) {
-    backup_proto::BackupSetPtr msg = backup_descriptor_.backup_sets.at(i);
+  for (int i = 0; i < backup_descriptor_->backup_sets.size(); ++i) {
+    backup_proto::BackupSetPtr msg = backup_descriptor_->backup_sets.at(i);
     retval.push_back(GetProxyById<backup_proto::BackupSet>(msg, msg->id));
   }
   return retval;
@@ -114,25 +113,26 @@ StatusPtr BtrfsBackendServiceImpl::CreateBackupSet(
   }
 
   // Create all the goo in the backup descriptor
-  backup_proto::BackupSetPtr proto_set = new BackupSetServerImpl(ic_);
+  BackupSetServerImpl* proto_set = new BackupSetServerImpl(ic_);
+  backup_proto::BackupSetPtr proto_ptr(proto_set);
   proto_set->mName = name;
   proto_set->id.name = new_uuid;
   proto_set->mPath = backup_set_path.string();
-  backup_descriptor_.backup_sets.push_back(proto_set);
+  backup_descriptor_->backup_sets.push_back(proto_set);
 
   // Return the created backup set proto
-  set_ref = GetProxyById<backup_proto::BackupSet>(proto_set, proto_set->id);
+  set_ref = GetProxyById<backup_proto::BackupSet>(proto_ptr, proto_set->id);
   return new StatusImpl(kStatusOk);
 }
 
 StatusPtr BtrfsBackendServiceImpl::GetBackupSet(
-    const string& name, backup_proto::BackupSetPrx& set_ref,
+    const string& id, backup_proto::BackupSetPrx& set_ref,
     const Ice::Current& current) {
   for (backup_proto::BackupSetList::iterator iter =
-           backup_descriptor_.backup_sets.begin();
-       iter != backup_descriptor_.backup_sets.end();
+           backup_descriptor_->backup_sets.begin();
+       iter != backup_descriptor_->backup_sets.end();
        ++iter) {
-    if ((*iter)->mName == name) {
+    if ((*iter)->id.name == id) {
       set_ref = GetProxyById<backup_proto::BackupSet>(*iter, (*iter)->id);
       return new StatusImpl(kStatusOk);
     }

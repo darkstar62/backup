@@ -13,6 +13,8 @@
 
 namespace backup {
 
+class BackupSet;
+
 // Main class implementing functionality for the CLI interface.
 class CliMain {
  public:
@@ -44,6 +46,13 @@ class CliMain {
   // "create_full_backup" command, taking the backup set, new backup
   // name, and size in megabytes of the new backup as arguments.
   int CreateFullBackup();
+
+  // List the currently available backups in the given backup set.  Implements
+  // the "list_backups" command.
+  int ListBackups();
+
+  // Get a backup set by ID from the backend.
+  BackupSet* GetBackupSet(std::string id);
 
   // The storage backend.
   boost::scoped_ptr<StorageBackend> backend_;
