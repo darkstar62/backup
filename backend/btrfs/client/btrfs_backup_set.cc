@@ -11,6 +11,8 @@
 #include "glog/logging.h"
 
 using backup_proto::StatusPtr;
+using backup_proto::kBackupTypeFull;
+using backup_proto::kBackupTypeIncremental;
 using std::string;
 using std::vector;
 
@@ -34,22 +36,43 @@ std::vector<Backup*> BtrfsBackupSet::EnumerateBackups() {
 }
 
 Backup* BtrfsBackupSet::CreateIncrementalBackup(const BackupOptions& options) {
-  string description = options.description();
-  uint64_t size_mb = options.size_in_mb();
-
   // Creating an incremental backup requires a previous backup.  Though it's
   // possible to create an incremental backup using any backup increment, it's
   // also kinda pointless to do it from one in the middle.  So to simplify
   // things, we use the last created backup as the base.
+  backup_proto::BackupOptions btrfs_options;
+  btrfs_options.description = options.description();
+  btrfs_options.size_in_mb = options.size_in_mb();
 
+  backup_proto::BackupPtr backup;
+  StatusPtr retval = server_set_->CreateBackup(
+      kBackupTypeIncremental, btrfs_options, backup);
+  if (!retval->ok()) {
+    LOG(ERROR) << description() << ": Could not create backup: "
+               << retval->ToString();
+    return NULL;
+  }
+
+  LOG(INFO) << "Success";
   return NULL;
 }
 
 Backup* BtrfsBackupSet::CreateFullBackup(const BackupOptions& options) {
+  backup_proto::BackupOptions btrfs_options;
+  btrfs_options.description = options.description();
+  btrfs_options.size_in_mb = options.size_in_mb();
+
+  backup_proto::BackupPtr backup;
+  StatusPtr retval = server_set_->CreateBackup(
+      kBackupTypeFull, btrfs_options, backup);
+  if (!retval->ok()) {
+    LOG(ERROR) << description() << ": Could not create backup: "
+               << retval->ToString();
+    return NULL;
+  }
+
+  LOG(INFO) << "Success";
   return NULL;
 }
-
-////////////////////////////////////////
-
 
 }  // namespace backup

@@ -40,6 +40,11 @@ class CliMain {
   // name, and size in megabytes of the new backup as arguments.
   int CreateIncrementalBackup();
 
+  // Create a new full backup in the given backup set.  Implements the
+  // "create_full_backup" command, taking the backup set, new backup
+  // name, and size in megabytes of the new backup as arguments.
+  int CreateFullBackup();
+
   // The storage backend.
   boost::scoped_ptr<StorageBackend> backend_;
 

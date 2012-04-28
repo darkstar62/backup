@@ -114,7 +114,7 @@ StatusPtr BtrfsBackendServiceImpl::CreateBackupSet(
   }
 
   // Create all the goo in the backup descriptor
-  backup_proto::BackupSetPtr proto_set = new BackupSetServerImpl;
+  backup_proto::BackupSetPtr proto_set = new BackupSetServerImpl(ic_);
   proto_set->mName = name;
   proto_set->id.name = new_uuid;
   proto_set->mPath = backup_set_path.string();

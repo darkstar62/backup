@@ -9,7 +9,8 @@ enum StatusEnum {
   kStatusOk,
   kStatusUnknownError,
   kStatusBackupSetNotFound,
-  kStatusBackupSetCreateFailed
+  kStatusBackupSetCreateFailed,
+  kStatusBackupCreateFailed
 };
 
 class Status {

@@ -66,6 +66,8 @@ int CliMain::RunCommand() {
     return CreateBackupSet();
   } else if (command_ == "create_incremental_backup") {
     return CreateIncrementalBackup();
+  } else if (command_ == "create_full_backup") {
+    return CreateFullBackup();
   }
 
   LOG(ERROR) << "Invalid command: " << command_;
@@ -118,6 +120,35 @@ int CliMain::CreateIncrementalBackup() {
                      .set_size_in_mb(backup_size_mb));
   if (!backup) {
     LOG(ERROR) << "Error creating incremental backup";
+    return EXIT_FAILURE;
+  }
+
+  return EXIT_SUCCESS;
+}
+
+int CliMain::CreateFullBackup() {
+  CHECK_EQ(3, args_.size())
+      << "Must specify a backup set name, backup name, and size";
+
+  string backup_set_name = args_.at(0);
+  string backup_name = args_.at(1);
+  uint64_t backup_size_mb;
+
+  CHECK_EQ(1, sscanf(args_.at(2).c_str(), "%lu", &backup_size_mb))
+      << "Third argument must be a positive integer";
+
+  // Find the backup set.
+  BackupSet* backup_set = backend_->GetBackupSet(backup_set_name);
+  if (!backup_set) {
+    LOG(ERROR) << "Could not get backup set";
+    return EXIT_FAILURE;
+  }
+
+  Backup* backup = backup_set->CreateFullBackup(
+      BackupOptions().set_description(backup_name)
+                     .set_size_in_mb(backup_size_mb));
+  if (!backup) {
+    LOG(ERROR) << "Error creating full backup";
     return EXIT_FAILURE;
   }
 
