@@ -11,6 +11,7 @@ FIND_PACKAGE(Glog REQUIRED)
 # LIBRARY: storage_backend
     ADD_LIBRARY(
         backend.btrfs.client.storage_backend
+            btrfs_backup.cc
             btrfs_backup.h
             btrfs_backup_set.cc
             btrfs_backup_set.h

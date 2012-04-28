@@ -17,14 +17,9 @@ class BackupSet;
 
 class BtrfsStorageBackend : public StorageBackend {
  public:
-  BtrfsStorageBackend(Ice::CommunicatorPtr ic, const std::string host,
-                      const std::string port)
-      : StorageBackend(),
-        host_(host),
-        port_(port),
-        ic_(ic) {
-  }
-
+  BtrfsStorageBackend(
+      int argc, char* argv[],
+      const std::string host, const std::string port);
   virtual ~BtrfsStorageBackend();
 
   // Initialize the storage backend.  This should be called after setting

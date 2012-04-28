@@ -23,9 +23,7 @@ class BtrfsBackendServiceImpl : public backup_proto::BtrfsBackendService {
  public:
   // Initialize the backend service.  The backup sets are enumberated from the given
   // path on the server filesystem.
-  BtrfsBackendServiceImpl(
-      Ice::CommunicatorPtr ic, Ice::ObjectAdapterPtr adapter,
-      const std::string& path);
+  BtrfsBackendServiceImpl(const std::string& path);
   virtual ~BtrfsBackendServiceImpl();
 
   // Initialize the backend.  Returns true if successful, false otherwise.
@@ -51,10 +49,6 @@ class BtrfsBackendServiceImpl : public backup_proto::BtrfsBackendService {
       const Ice::Current& current);
 
  private:
-  // Utility function to map from an ICE object / ID to its proxy.
-  template<typename T>
-  typename T::ProxyType GetProxyById(
-      typename T::PointerType& obj, Ice::Identity& id);
 
   // Path to the backup sets on the server filesystem.  This path is used for all
   // operations the server needs to perform.
@@ -62,29 +56,8 @@ class BtrfsBackendServiceImpl : public backup_proto::BtrfsBackendService {
 
   backup_proto::BackupDescriptorPtr backup_descriptor_;
 
-  Ice::CommunicatorPtr ic_;
-  Ice::ObjectAdapterPtr adapter_;
-
   DISALLOW_COPY_AND_ASSIGN(BtrfsBackendServiceImpl);
 };
-
-template<typename T>
-typename T::ProxyType BtrfsBackendServiceImpl::GetProxyById(
-    typename T::PointerType& obj, Ice::Identity& id) {
-  Ice::ObjectPtr found_obj = adapter_->find(id);
-  typename T::ProxyType proxy;
-  if (!found_obj.get()) {
-    // Object isn't mapped into ICE; do that now.
-    LOG(INFO) << "Added object " << id.name;
-    proxy = T::ProxyType::uncheckedCast(adapter_->add(obj, id));
-  } else {
-    // We have the object, just grab the proxy.
-    CHECK_EQ(obj.get(), found_obj.get());
-    LOG(INFO) << "Got existing object " << id.name;
-    proxy = T::ProxyType::uncheckedCast(adapter_->createProxy(id));
-  }
-  return proxy;
-}
 
 }  // namespace backup
 #endif  // BACKUP_BACKEND_BTRFS_SERVER_BTRFS_BACKEND_SERVICE_IMPL_H_

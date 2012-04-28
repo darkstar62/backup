@@ -14,13 +14,12 @@ namespace backup {
 
 // Implementation of the server-side BackupSet proto class.  This class actually
 // does the server-side work of managing backup sets.
-class BackupSetServerImpl : public backup_proto::BackupSet {
+class BackupSetImpl : public backup_proto::BackupSet {
  public:
-  BackupSetServerImpl(Ice::CommunicatorPtr ic)
+  BackupSetImpl()
       : backup_proto::BackupSet(),
-        ic_(CHECK_NOTNULL(ic.get())),
         initialized_(false) {}
-  virtual ~BackupSetServerImpl();
+  virtual ~BackupSetImpl();
 
   // Initialize the backup set descriptor and get the server-side backup
   // set ready to use client-side.
@@ -30,12 +29,12 @@ class BackupSetServerImpl : public backup_proto::BackupSet {
   backup_proto::StatusPtr CreateBackup(
       backup_proto::BackupType type,
       const backup_proto::BackupOptions& options,
-      backup_proto::BackupPtr& backup_ref,
+      backup_proto::BackupPrx& backup_ref,
       const Ice::Current&);
 
   // Enumerate the backups in the set.
   backup_proto::StatusPtr EnumerateBackups(
-      backup_proto::BackupList& backup_list_ref,
+      backup_proto::BackupPtrList& backup_list_ref,
       const Ice::Current&);
 
   // Accessors for the ID.
@@ -47,13 +46,6 @@ class BackupSetServerImpl : public backup_proto::BackupSet {
   void set_name(const std::string& name, const Ice::Current&) { mName = name; }
 
  private:
-  // Kill off the default constructor so we can ensure we always have a
-  // communicator.
-  BackupSetServerImpl();
-
-  // ICE communicator for serialization.
-  Ice::CommunicatorPtr ic_;
-
   // Backup set descriptor.
   backup_proto::BackupSetDescriptor descriptor_;
 
@@ -66,18 +58,14 @@ class BackupSetFactory : public Ice::ObjectFactory {
  public:
   virtual Ice::ObjectPtr create(const std::string& type) {
     CHECK_EQ(backup_proto::BackupSet::ice_staticId(), type);
-    BackupSetServerImpl* obj = new BackupSetServerImpl(ic_);
-    return obj;
+    return new BackupSetImpl;
   }
   virtual void destroy() {}
 
   static void Init(Ice::CommunicatorPtr ic) {
-    ic_ = ic;
     ic->addObjectFactory(new BackupSetFactory,
                          backup_proto::BackupSet::ice_staticId());
   }
-
-  static Ice::CommunicatorPtr ic_;
 };
 
 }  // namespace backup

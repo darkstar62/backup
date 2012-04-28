@@ -11,6 +11,8 @@
 #include "backend/btrfs/server/btrfs_backend_service.proto.h"
 #include "backend/btrfs/server/btrfs_backend_service_impl.h"
 #include "backend/btrfs/server/backup_set_impl.h"
+#include "backend/btrfs/server/global.h"
+#include "backend/btrfs/server/util.h"
 #include "base/string.h"
 #include "boost/filesystem.hpp"
 #include "glog/logging.h"
@@ -28,14 +30,10 @@ using std::vector;
 
 namespace backup {
 
-BtrfsBackendServiceImpl::BtrfsBackendServiceImpl(
-    Ice::CommunicatorPtr ic, Ice::ObjectAdapterPtr adapter,
-    const std::string& path)
+BtrfsBackendServiceImpl::BtrfsBackendServiceImpl(const std::string& path)
     : BtrfsBackendService(),
       path_(boost::filesystem::path(path)),
-      backup_descriptor_(new backup_proto::BackupDescriptor),
-      ic_(ic),
-      adapter_(adapter) {
+      backup_descriptor_(new backup_proto::BackupDescriptor) {
   // Verify the path given exists and is a directory.
   if (!boost::filesystem::exists(path_) ||
       !boost::filesystem::is_directory(path_)) {
@@ -48,7 +46,7 @@ BtrfsBackendServiceImpl::~BtrfsBackendServiceImpl() {
   path desc_path = path_ / "backup_descriptor.cfg";
 
   // Convert the list of backup sets to a data stream we can write.
-  Ice::OutputStreamPtr out = Ice::createOutputStream(ic_);
+  Ice::OutputStreamPtr out = Ice::createOutputStream(IceObjects::Instance()->ic);
   out->write(backup_descriptor_);
   out->writePendingObjects();
 
@@ -71,7 +69,8 @@ bool BtrfsBackendServiceImpl::Init() {
     input.read(reinterpret_cast<char*>(&in_stream.at(0)), in_stream.size());
     input.close();
 
-    Ice::InputStreamPtr in = Ice::createInputStream(ic_, in_stream);
+    Ice::InputStreamPtr in = Ice::createInputStream(
+        IceObjects::Instance()->ic, in_stream);
     in->read(backup_descriptor_);
     in->readPendingObjects();
   }
@@ -113,7 +112,7 @@ StatusPtr BtrfsBackendServiceImpl::CreateBackupSet(
   }
 
   // Create all the goo in the backup descriptor
-  BackupSetServerImpl* proto_set = new BackupSetServerImpl(ic_);
+  BackupSetImpl* proto_set = new BackupSetImpl;
   backup_proto::BackupSetPtr proto_ptr(proto_set);
   proto_set->mName = name;
   proto_set->id.name = new_uuid;

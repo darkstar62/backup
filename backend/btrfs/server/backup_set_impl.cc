@@ -8,7 +8,10 @@
 
 #include "Ice/Ice.h"
 #include "IceUtil/UUID.h"
+#include "backend/btrfs/server/backup_impl.h"
 #include "backend/btrfs/server/backup_set_impl.h"
+#include "backend/btrfs/server/global.h"
+#include "backend/btrfs/server/util.h"
 #include "backend/btrfs/proto/status.proto.h"
 #include "backend/btrfs/proto/status_impl.h"
 #include "boost/filesystem.hpp"
@@ -28,14 +31,13 @@ using std::vector;
 
 namespace backup {
 
-Ice::CommunicatorPtr BackupSetFactory::ic_ = NULL;
-
-BackupSetServerImpl::~BackupSetServerImpl() {
+BackupSetImpl::~BackupSetImpl() {
   LOG(INFO) << mName << ": Creating backup set descriptor";
   path desc_path = path(mPath) / "backup_set_descriptor.cfg";
 
   // Convert the list of backup sets to a data stream we can write.
-  Ice::OutputStreamPtr out = Ice::createOutputStream(ic_);
+  Ice::OutputStreamPtr out = Ice::createOutputStream(
+      IceObjects::Instance()->ic);
   out->write(descriptor_);
   out->writePendingObjects();
 
@@ -48,7 +50,7 @@ BackupSetServerImpl::~BackupSetServerImpl() {
   output.close();
 }
 
-StatusPtr BackupSetServerImpl::Init(const Ice::Current&) {
+StatusPtr BackupSetImpl::Init(const Ice::Current&) {
   if (initialized_) {
     return new StatusImpl(kStatusOk);
   }
@@ -80,7 +82,8 @@ StatusPtr BackupSetServerImpl::Init(const Ice::Current&) {
     input.read(reinterpret_cast<char*>(&in_stream.at(0)), in_stream.size());
     input.close();
 
-    Ice::InputStreamPtr in = Ice::createInputStream(ic_, in_stream);
+    Ice::InputStreamPtr in = Ice::createInputStream(
+        IceObjects::Instance()->ic, in_stream);
     in->read(descriptor_);
     in->readPendingObjects();
   }
@@ -89,10 +92,10 @@ StatusPtr BackupSetServerImpl::Init(const Ice::Current&) {
   return new StatusImpl(kStatusOk);
 }
 
-StatusPtr BackupSetServerImpl::CreateBackup(
+StatusPtr BackupSetImpl::CreateBackup(
     backup_proto::BackupType type,
     const backup_proto::BackupOptions& options,
-    backup_proto::BackupPtr& backup_ref,
+    backup_proto::BackupPrx& backup_ref,
     const Ice::Current&) {
   LOG(INFO) << mName << ": Create backup: " << options.description;
 
@@ -143,7 +146,7 @@ StatusPtr BackupSetServerImpl::CreateBackup(
   }
 
   // Create all the goo in the backup descriptor
-  backup_proto::BackupPtr proto_backup = new backup_proto::Backup;
+  backup_proto::BackupPtr proto_backup = new BackupImpl;
   proto_backup->description = options.description;
   proto_backup->type = type;
   proto_backup->id.name = new_uuid;
@@ -153,15 +156,19 @@ StatusPtr BackupSetServerImpl::CreateBackup(
   LOG(INFO) << "Now at " << descriptor_.backups.size() << " backups";
 
   // Return the created backup set proto
-  //backup_ref = GetProxyById<backup_proto::BackupSet>(proto_set, proto_set->id);
-  backup_ref = proto_backup;
+  backup_ref = GetProxyById<backup_proto::Backup>(proto_backup, proto_backup->id);
   return new StatusImpl(kStatusOk);
 }
 
-StatusPtr BackupSetServerImpl::EnumerateBackups(
-    backup_proto::BackupList& backup_list_ref,
+StatusPtr BackupSetImpl::EnumerateBackups(
+    backup_proto::BackupPtrList& backup_list_ref,
     const Ice::Current&) {
-  backup_list_ref = descriptor_.backups;
+  // Return a list of all the backup sets we're managing.
+  for (int i = 0; i < descriptor_.backups.size(); ++i) {
+    backup_proto::BackupPtr msg = descriptor_.backups.at(i);
+    backup_list_ref.push_back(GetProxyById<backup_proto::Backup>(msg, msg->id));
+  }
+
   return new StatusImpl(kStatusOk);
 }
 

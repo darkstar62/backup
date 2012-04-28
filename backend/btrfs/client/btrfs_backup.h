@@ -15,14 +15,16 @@ namespace backup {
 // BtrfsBackup is the BTRFS implementation of the Backup interface.
 class BtrfsBackup : public Backup {
  public:
-  BtrfsBackup(backup_proto::BackupPtr backup_proto)
-      : Backup(backup_proto->id.name, backup_proto->description) {
-    set_create_time(backup_proto->create_time);
-    set_type(backup_proto->type == backup_proto::kBackupTypeIncremental ?
-             kBackupTypeIncremental : kBackupTypeFull);
-    set_increment_of_id(backup_proto->increment_of_id.name);
-  }
+  BtrfsBackup(backup_proto::BackupPrx backup_service);
   virtual ~BtrfsBackup() {}
+
+  // Initialize the backup.  For newly created backups, this will create the
+  // BTRFS filesystem image in the backup directory of the required size for
+  // the backup.  In the case of incremental backups, the previous backup is
+  // mounted and all file contents are linked in.
+  //
+  // Note, this can take some time.
+  bool Init();
 
   // Actually perform a backup, given a list of files to backup.  Returns true
   // if the backup is successful; false otherwise.
@@ -34,6 +36,11 @@ class BtrfsBackup : public Backup {
   // function need to be OS-aware and return the appropriate style path
   // for the operating system.
   virtual const std::string OpenAndGetRestorePath() { return ""; }
+
+ private:
+  backup_proto::BackupPrx backup_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(BtrfsBackup);
 };
 
 }  // namespace backup

@@ -26,7 +26,26 @@ DEFINE_int32(num_rpc_threads, 1, "Number of threads for RPC handling");
 namespace backup {
 class BackupSet;
 
+BtrfsStorageBackend::BtrfsStorageBackend(
+    int argc, char* argv[],
+    const std::string host, const std::string port)
+    : StorageBackend(),
+      host_(host),
+      port_(port) {
+  // Start ICE and register ICE object factories for the client.
+  //
+  // IMPORTANT: The client-facing ICE instance MUST NOT know about server-side
+  // object implementations; otherwise the dependency separation between the
+  // client and server becomes fuzzy.
+  ic_ = Ice::initialize(argc, argv);
+  backup_proto::StatusFactory::Init(ic_);
+}
+
 BtrfsStorageBackend::~BtrfsStorageBackend() {
+  if (ic_) {
+    ic_->destroy();
+    ic_ = NULL;
+  }
 }
 
 bool BtrfsStorageBackend::Init() {

@@ -29,7 +29,7 @@ bool BtrfsBackupSet::Init() {
 
 vector<Backup*> BtrfsBackupSet::EnumerateBackups() {
   // The backups are stored in the backup descriptor for the backup set.
-  backup_proto::BackupList backup_list;
+  backup_proto::BackupPtrList backup_list;
   StatusPtr retval = server_set_->EnumerateBackups(backup_list);
   if (!retval->ok()) {
     LOG(ERROR) << description() << ": Could not enumerate backups: "
@@ -39,9 +39,13 @@ vector<Backup*> BtrfsBackupSet::EnumerateBackups() {
   }
 
   vector<Backup*> backups;
-  for (backup_proto::BackupList::iterator iter = backup_list.begin();
+  for (backup_proto::BackupPtrList::iterator iter = backup_list.begin();
        iter != backup_list.end(); ++iter) {
     BtrfsBackup* backup = new BtrfsBackup(*iter);
+    if (!backup->Init()) {
+      LOG(ERROR) << "Failed to initialize backup " << (*iter)->get_description();
+      continue;
+    }
     backups.push_back(backup);
   }
 
@@ -57,7 +61,7 @@ Backup* BtrfsBackupSet::CreateIncrementalBackup(const BackupOptions& options) {
   btrfs_options.description = options.description();
   btrfs_options.size_in_mb = options.size_in_mb();
 
-  backup_proto::BackupPtr backup_proto;
+  backup_proto::BackupPrx backup_proto;
   StatusPtr retval = server_set_->CreateBackup(
       backup_proto::kBackupTypeIncremental, btrfs_options, backup_proto);
   if (!retval->ok()) {
@@ -77,7 +81,7 @@ Backup* BtrfsBackupSet::CreateFullBackup(const BackupOptions& options) {
   btrfs_options.description = options.description();
   btrfs_options.size_in_mb = options.size_in_mb();
 
-  backup_proto::BackupPtr backup_proto;
+  backup_proto::BackupPrx backup_proto;
   StatusPtr retval = server_set_->CreateBackup(
       backup_proto::kBackupTypeFull, btrfs_options, backup_proto);
   if (!retval->ok()) {

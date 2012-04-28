@@ -15,6 +15,18 @@ enum BackupType {
 };
 
 class Backup {
+  // Initialize the backup on the server.  This creates the BTRFS filesystem
+  // image if it doesn't exist and populates it with symlinks if incremental.
+  Status Init();
+
+  // Accessors for the client
+  string get_id();
+  long get_create_time();
+  string get_description();
+  BackupType get_type();
+  long get_size_in_mb();
+  string get_increment_of_id();
+
   // Unique identity of the backup set.
   Ice::Identity id;
 
@@ -35,6 +47,7 @@ class Backup {
   Ice::Identity increment_of_id;
 };
 
+sequence<Backup*> BackupPtrList;
 sequence<Backup> BackupList;
 
 // The BackupSetDescriptor describes all of the backups contained within a
@@ -60,10 +73,10 @@ class BackupSet {
 
   // Create a backup.
   Status CreateBackup(BackupType type, BackupOptions options,
-                      out Backup backup_ref);
+                      out Backup* backup_ref);
 
   // Enumerate the backups in the set.
-  Status EnumerateBackups(out BackupList backup_list_ref);
+  Status EnumerateBackups(out BackupPtrList backup_list_ref);
 
   // Various accessors for the client-side.
   string get_id();

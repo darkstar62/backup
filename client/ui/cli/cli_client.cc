@@ -6,11 +6,9 @@
 #include <string>
 #include <vector>
 
-#include "Ice/Ice.h"
 #include "backend/btrfs/client/btrfs_storage_backend.h"
 #include "backend/public/backup.h"
 #include "backend/public/backup_set.h"
-#include "base/ice.h"
 #include "client/ui/cli/cli_client.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
@@ -33,9 +31,8 @@ namespace backup {
 
 CliMain::CliMain(int argc, char* argv[]) {
   if (FLAGS_backend == "btrfs") {
-    ic_ = InitializeIce(argc, argv);
-    backend_.reset(new BtrfsStorageBackend(ic_, FLAGS_btrfs_hostname,
-                                           FLAGS_btrfs_port));
+    backend_.reset(new BtrfsStorageBackend(
+        argc, argv, FLAGS_btrfs_hostname, FLAGS_btrfs_port));
   } else {
     LOG(FATAL) << "Invalid backend specified: " << FLAGS_backend;
   }
@@ -46,13 +43,6 @@ CliMain::CliMain(int argc, char* argv[]) {
 
   for (int a = 2; a < argc; ++a) {
     args_.push_back(string(argv[a]));
-  }
-}
-
-CliMain::~CliMain() {
-  if (ic_) {
-    ic_->destroy();
-    ic_ = NULL;
   }
 }
 

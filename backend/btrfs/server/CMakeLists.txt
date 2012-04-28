@@ -36,18 +36,34 @@ FIND_PACKAGE(Glog REQUIRED)
             backup_descriptor.ice)
     ADD_LIBRARY(
         backend.btrfs.server.backup_descriptor_proto
-            backup_set_impl.cc
-            backup_set_impl.h
             ${backup_descriptor_sources}
-            ${backup_descriptor_headers}
-            ${Boost_FILESYSTEM_LIBRARY}
-            ${GLOG_LIBRARY})
+            ${backup_descriptor_headers})
     ADD_DEPENDENCIES(
         backend.btrfs.server.backup_descriptor_proto
             backend.btrfs.proto.status_proto)
     TARGET_LINK_LIBRARIES(
         backend.btrfs.server.backup_descriptor_proto
             backend.btrfs.proto.status_proto
+            Ice)
+
+# Proto describing the various backup descriptors.
+# LIBRARY: backup_descriptor
+    ADD_LIBRARY(
+        backend.btrfs.server.backup_descriptor
+            backup_impl.cc
+            backup_impl.h
+            backup_set_impl.cc
+            backup_set_impl.h
+            ${Boost_FILESYSTEM_LIBRARY}
+            ${GLOG_LIBRARY})
+    ADD_DEPENDENCIES(
+        backend.btrfs.server.backup_descriptor
+            backend.btrfs.proto.status_proto
+            backend.btrfs.server.backup_descriptor_proto)
+    TARGET_LINK_LIBRARIES(
+        backend.btrfs.server.backup_descriptor
+            backend.btrfs.proto.status_proto
+            backend.btrfs.server.backup_descriptor_proto
             Ice)
 
 # BINARY: btrfs_backend
@@ -59,11 +75,13 @@ FIND_PACKAGE(Glog REQUIRED)
     ADD_DEPENDENCIES(
         btrfs_backend
             backend.btrfs.proto.status_proto
+            backend.btrfs.server.backup_descriptor
             backend.btrfs.server.backup_descriptor_proto
             backend.btrfs.server.service_proto)
     TARGET_LINK_LIBRARIES(
         btrfs_backend
             backend.btrfs.proto.status_proto
+            backend.btrfs.server.backup_descriptor
             backend.btrfs.server.backup_descriptor_proto
             backend.btrfs.server.service_proto
             Ice

@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "Ice/Ice.h"
 #include "backend/public/storage_backend.h"
 #include "boost/scoped_ptr.hpp"
 
@@ -19,7 +18,7 @@ class BackupSet;
 class CliMain {
  public:
   CliMain(int argc, char* argv[]);
-  ~CliMain();
+  ~CliMain() {}
 
   // Initialize the backend.  Returns whether initialization was successful.
   bool Init();
@@ -56,9 +55,6 @@ class CliMain {
 
   // The storage backend.
   boost::scoped_ptr<StorageBackend> backend_;
-
-  // The ICE communicator.
-  Ice::CommunicatorPtr ic_;
 
   // The command and the arguments passed
   std::string command_;
