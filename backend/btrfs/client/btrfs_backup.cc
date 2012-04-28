@@ -3,7 +3,7 @@
 
 #include "backend/btrfs/client/btrfs_backup.h"
 #include "backend/btrfs/proto/status.proto.h"
-#include "backend/btrfs/server/backup_descriptor.proto.h"
+#include "backend/btrfs/server/backup.proto.h"
 #include "glog/logging.h"
 
 using backup_proto::StatusPtr;

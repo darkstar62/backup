@@ -27,7 +27,6 @@ class BackupSetImpl : public backup_proto::BackupSet {
 
   // Create a backup.
   backup_proto::StatusPtr CreateBackup(
-      backup_proto::BackupType type,
       const backup_proto::BackupOptions& options,
       backup_proto::BackupPrx& backup_ref,
       const Ice::Current&);

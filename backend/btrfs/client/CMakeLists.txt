@@ -22,7 +22,8 @@ FIND_PACKAGE(Glog REQUIRED)
     TARGET_LINK_LIBRARIES(
         backend.btrfs.client.storage_backend
             backend.btrfs.proto.status_proto
-            backend.btrfs.server.backup_descriptor_proto
+            backend.btrfs.server.backup_proto
+            backend.btrfs.server.backup_set_proto
             backend.btrfs.server.service_proto
             boost_thread
             ${Boost_FILESYSTEM_LIBRARY}
@@ -32,6 +33,7 @@ FIND_PACKAGE(Glog REQUIRED)
     ADD_DEPENDENCIES(
         backend.btrfs.client.storage_backend
             backend.btrfs.proto.status_proto
-            backend.btrfs.server.backup_descriptor_proto
+            backend.btrfs.server.backup_proto
+            backend.btrfs.server.backup_set_proto
             backend.btrfs.server.service_proto)
 

@@ -58,12 +58,12 @@ Backup* BtrfsBackupSet::CreateIncrementalBackup(const BackupOptions& options) {
   // also kinda pointless to do it from one in the middle.  So to simplify
   // things, we use the last created backup as the base.
   backup_proto::BackupOptions btrfs_options;
+  btrfs_options.type = backup_proto::kBackupTypeIncremental;
   btrfs_options.description = options.description();
   btrfs_options.size_in_mb = options.size_in_mb();
 
   backup_proto::BackupPrx backup_proto;
-  StatusPtr retval = server_set_->CreateBackup(
-      backup_proto::kBackupTypeIncremental, btrfs_options, backup_proto);
+  StatusPtr retval = server_set_->CreateBackup(btrfs_options, backup_proto);
   if (!retval->ok()) {
     LOG(ERROR) << description() << ": Could not create backup: "
                << retval->ToString();
@@ -78,12 +78,12 @@ Backup* BtrfsBackupSet::CreateIncrementalBackup(const BackupOptions& options) {
 
 Backup* BtrfsBackupSet::CreateFullBackup(const BackupOptions& options) {
   backup_proto::BackupOptions btrfs_options;
+  btrfs_options.type = backup_proto::kBackupTypeFull;
   btrfs_options.description = options.description();
   btrfs_options.size_in_mb = options.size_in_mb();
 
   backup_proto::BackupPrx backup_proto;
-  StatusPtr retval = server_set_->CreateBackup(
-      backup_proto::kBackupTypeFull, btrfs_options, backup_proto);
+  StatusPtr retval = server_set_->CreateBackup(btrfs_options, backup_proto);
   if (!retval->ok()) {
     LOG(ERROR) << description() << ": Could not create backup: "
                << retval->ToString();

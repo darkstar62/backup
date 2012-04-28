@@ -9,7 +9,7 @@
 #include "backend/btrfs/client/btrfs_storage_backend.h"
 #include "backend/btrfs/proto/status.proto.h"
 #include "backend/btrfs/proto/status_impl.h"
-#include "backend/btrfs/server/backup_descriptor.proto.h"
+#include "backend/btrfs/server/backup_set.proto.h"
 #include "backend/btrfs/server/btrfs_backend_service.proto.h"
 #include "base/string.h"
 #include "boost/filesystem.hpp"

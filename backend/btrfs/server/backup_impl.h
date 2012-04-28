@@ -5,7 +5,7 @@
 #define BACKUP_BACKEND_BTRFS_SERVER_BACKUP_IMPL_H_
 
 #include "Ice/Ice.h"
-#include "backend/btrfs/server/backup_descriptor.proto.h"
+#include "backend/btrfs/server/backup.proto.h"
 #include "backend/btrfs/proto/status.proto.h"
 #include "backend/btrfs/proto/status_impl.h"
 

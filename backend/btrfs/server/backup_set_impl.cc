@@ -93,7 +93,6 @@ StatusPtr BackupSetImpl::Init(const Ice::Current&) {
 }
 
 StatusPtr BackupSetImpl::CreateBackup(
-    backup_proto::BackupType type,
     const backup_proto::BackupOptions& options,
     backup_proto::BackupPrx& backup_ref,
     const Ice::Current&) {
@@ -103,7 +102,7 @@ StatusPtr BackupSetImpl::CreateBackup(
   // a previous backup having been performed.  We take the latest backup as
   // the basis for the incremental.
   string increment_of_id = "_INVALID_";
-  if (type == kBackupTypeIncremental) {
+  if (options.type == kBackupTypeIncremental) {
     // Find the most recent backup and use its ID.
     uint64_t max_time = 0;
     backup_proto::BackupList::iterator max_iter = descriptor_.backups.end();
@@ -148,7 +147,7 @@ StatusPtr BackupSetImpl::CreateBackup(
   // Create all the goo in the backup descriptor
   backup_proto::BackupPtr proto_backup = new BackupImpl;
   proto_backup->description = options.description;
-  proto_backup->type = type;
+  proto_backup->type = options.type;
   proto_backup->id.name = new_uuid;
   proto_backup->increment_of_id.name = increment_of_id;
   proto_backup->create_time = time(NULL);
