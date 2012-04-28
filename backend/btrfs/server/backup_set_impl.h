@@ -7,7 +7,7 @@
 #include <string>
 
 #include "Ice/Ice.h"
-#include "backend/btrfs/server/backup_descriptor.proto.h"
+#include "backend/btrfs/proto/backup_descriptor.proto.h"
 #include "glog/logging.h"
 
 namespace backup {

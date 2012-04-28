@@ -1,11 +1,11 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
-#ifndef BACKUP_BACKEND_BTRFS_BTRFS_BACKEND_SERVICE_ICE_
-#define BACKUP_BACKEND_BTRFS_BTRFS_BACKEND_SERVICE_ICE_
+#ifndef BACKUP_BACKEND_BTRFS_PROTO_BTRFS_BACKEND_SERVICE_ICE_
+#define BACKUP_BACKEND_BTRFS_PROTO_BTRFS_BACKEND_SERVICE_ICE_
 
+#include <backend/btrfs/proto/backup_descriptor.ice>
 #include <backend/btrfs/proto/status.ice>
-#include <backend/btrfs/server/backup_descriptor.ice>
 
 module backup_proto {
 
@@ -31,4 +31,4 @@ interface BtrfsBackendService {
 
 };  // module backend
 
-#endif  // BACKUP_BACKEND_BTRFS_BTRFS_BACKEND_SERVICE_ICE_
+#endif  // BACKUP_BACKEND_BTRFS_PROTO_BTRFS_BACKEND_SERVICE_ICE_

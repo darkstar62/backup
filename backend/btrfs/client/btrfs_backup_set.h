@@ -9,7 +9,7 @@
 
 #include "Ice/Ice.h"
 #include "base/macros.h"
-#include "backend/btrfs/server/backup_descriptor.proto.h"
+#include "backend/btrfs/proto/backup_descriptor.proto.h"
 #include "backend/public/backup_set.h"
 
 namespace backup {

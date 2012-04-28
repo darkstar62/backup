@@ -1,12 +1,12 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
-#ifndef BACKUP_BACKEND_BTRFS_BACKUP_SET_ICE_
-#define BACKUP_BACKEND_BTRFS_BACKUP_SET_ICE_
+#ifndef BACKUP_BACKEND_BTRFS_PROTO_BACKUP_SET_ICE_
+#define BACKUP_BACKEND_BTRFS_PROTO_BACKUP_SET_ICE_
 
 #include <Ice/Identity.ice>
+#include <backend/btrfs/proto/backup.ice>
 #include <backend/btrfs/proto/status.ice>
-#include <backend/btrfs/server/backup.ice>
 
 module backup_proto {
 
@@ -62,4 +62,4 @@ sequence<BackupSet*> BackupSetPtrList;
 sequence<BackupSet> BackupSetList;
 
 };  // module backup_proto
-#endif  // BACKUP_BACKEND_BTRFS_BACKUP_SET_ICE_
+#endif  // BACKUP_BACKEND_BTRFS_PROTO_BACKUP_SET_ICE_

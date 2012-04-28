@@ -8,7 +8,7 @@
 
 #include "backend/public/backup.h"
 #include "backend/public/file_list.h"
-#include "backend/btrfs/server/backup.proto.h"
+#include "backend/btrfs/proto/backup.proto.h"
 
 namespace backup {
 

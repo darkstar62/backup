@@ -7,10 +7,10 @@
 #include <vector>
 
 #include "Ice/Ice.h"
+#include "backend/btrfs/proto/backup_descriptor.proto.h"
+#include "backend/btrfs/proto/btrfs_backend_service.proto.h"
 #include "backend/btrfs/proto/status.proto.h"
 #include "backend/btrfs/proto/status_impl.h"
-#include "backend/btrfs/server/backup_descriptor.proto.h"
-#include "backend/btrfs/server/btrfs_backend_service.proto.h"
 #include "base/macros.h"
 #include "boost/filesystem.hpp"
 

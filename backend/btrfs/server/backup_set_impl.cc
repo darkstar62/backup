@@ -8,12 +8,12 @@
 
 #include "Ice/Ice.h"
 #include "IceUtil/UUID.h"
+#include "backend/btrfs/proto/status.proto.h"
+#include "backend/btrfs/proto/status_impl.h"
 #include "backend/btrfs/server/backup_impl.h"
 #include "backend/btrfs/server/backup_set_impl.h"
 #include "backend/btrfs/server/global.h"
 #include "backend/btrfs/server/util.h"
-#include "backend/btrfs/proto/status.proto.h"
-#include "backend/btrfs/proto/status_impl.h"
 #include "boost/filesystem.hpp"
 #include "glog/logging.h"
 

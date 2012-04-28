@@ -1,13 +1,13 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
-#ifndef BACKUP_BACKEND_BTRFS_BACKUP_DESCRIPTOR_ICE_
-#define BACKUP_BACKEND_BTRFS_BACKUP_DESCRIPTOR_ICE_
+#ifndef BACKUP_BACKEND_BTRFS_PROTO_BACKUP_DESCRIPTOR_ICE_
+#define BACKUP_BACKEND_BTRFS_PROTO_BACKUP_DESCRIPTOR_ICE_
 
 #include <Ice/Identity.ice>
+#include <backend/btrfs/proto/backup.ice>
+#include <backend/btrfs/proto/backup_set.ice>
 #include <backend/btrfs/proto/status.ice>
-#include <backend/btrfs/server/backup.ice>
-#include <backend/btrfs/server/backup_set.ice>
 
 module backup_proto {
 
@@ -27,4 +27,4 @@ class BackupDescriptor {
 
 };  // module backup_proto
 
-#endif  // BACKUP_BACKEND_BTRFS_BACKUP_DESCRIPTOR_ICE_
+#endif  // BACKUP_BACKEND_BTRFS_PROTO_BACKUP_DESCRIPTOR_ICE_

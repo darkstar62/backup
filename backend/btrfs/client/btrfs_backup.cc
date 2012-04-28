@@ -2,8 +2,8 @@
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
 #include "backend/btrfs/client/btrfs_backup.h"
+#include "backend/btrfs/proto/backup.proto.h"
 #include "backend/btrfs/proto/status.proto.h"
-#include "backend/btrfs/server/backup.proto.h"
 #include "glog/logging.h"
 
 using backup_proto::StatusPtr;

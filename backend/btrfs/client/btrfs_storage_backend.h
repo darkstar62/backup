@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "Ice/Ice.h"
-#include "backend/btrfs/server/btrfs_backend_service.proto.h"
+#include "backend/btrfs/proto/btrfs_backend_service.proto.h"
 #include "backend/public/storage_backend.h"
 #include "base/macros.h"
 
