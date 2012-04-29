@@ -42,6 +42,9 @@ class Backup {
   string get_increment_of_id();
   void set_increment_of_id(string id);
 
+  string get_path();
+  void set_path(string path);
+
   // Unique identity of the backup.  This identifies the backup within the set,
   // and is used by the client to communicate to the server specifically which
   // backup is in question during operations.
@@ -64,6 +67,9 @@ class Backup {
   // If this backup is an incremental backup, this is the ID of the backup
   // this one is an incremental backup of.  Otherwise, this value is ignored.
   ["private"] Ice::Identity mIncrement_of_id;
+
+  // Full path to the backup directory.
+  ["private"] string mPath;
 };
 
 // Various sequences.

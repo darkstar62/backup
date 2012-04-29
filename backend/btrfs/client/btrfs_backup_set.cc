@@ -34,7 +34,7 @@ vector<Backup*> BtrfsBackupSet::EnumerateBackups() {
   if (!retval->ok()) {
     LOG(ERROR) << description() << ": Could not enumerate backups: "
                << retval->ToString();
-    // TODO: Implement error propogation
+    // FIXME(#4): Implement error propagation
     return vector<Backup*>();
   }
 

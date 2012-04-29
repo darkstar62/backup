@@ -1,7 +1,9 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
+#include <errno.h>
 #include <time.h>
+#include <unistd.h>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -151,6 +153,20 @@ StatusPtr BackupSetImpl::CreateBackup(
   proto_backup->set_id(new_uuid);
   proto_backup->set_increment_of_id(increment_of_id);
   proto_backup->set_create_time(time(NULL));
+  proto_backup->set_size_in_mb(options.size_in_mb);
+  proto_backup->set_path(backup_path.string());
+
+  StatusPtr init_retval = proto_backup->Init();
+  if (!init_retval->ok()) {
+    LOG(ERROR) << mName << ": Failed to initialize backup: "
+               << init_retval->ToString();
+    if (rmdir(backup_path.native().c_str()) == -1) {
+      LOG(ERROR) << mName << ": Additionally, failed to delete backup directory "
+                 << backup_path.native() << ": " << string(strerror(errno));
+    }
+    return init_retval;
+  }
+
   descriptor_.backups.push_back(proto_backup);
   LOG(INFO) << "Now at " << descriptor_.backups.size() << " backups";
 

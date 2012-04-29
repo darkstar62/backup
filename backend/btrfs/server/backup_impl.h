@@ -15,6 +15,10 @@ namespace backup {
 // enact server-side actions on its behalf via RPC.
 class BackupImpl : public backup_proto::Backup {
  public:
+  BackupImpl()
+      : backup_proto::Backup(),
+        initialized_(false) {
+  }
   virtual ~BackupImpl() {}
 
   // Initialize the backup.  This includes creating the BTRFS image
@@ -63,6 +67,29 @@ class BackupImpl : public backup_proto::Backup {
   virtual void set_increment_of_id(const std::string& id, const Ice::Current&) {
     mIncrement_of_id.name = id;
   }
+
+  // Get/set the full path for the backup.
+  virtual std::string get_path(const Ice::Current&) {
+    return mPath;
+  }
+  virtual void set_path(const std::string& path, const Ice::Current&) {
+    mPath = path;
+  }
+
+ private:
+  static const std::string kBackupImageName;
+
+  // Create the initially empty BTRFS filesystem.  This is the first step of
+  // initializing the backup, whether it's full or otherwise.
+  backup_proto::StatusPtr CreateFilesystemImage();
+
+  // Initialize the created filesystem image with symlinks from the previous
+  // backup image.
+  backup_proto::StatusPtr InitializeIncrementalBackup();
+
+  // Whether we've initialized or not.  This is called every time a client-side
+  // backup is created, so we don't want to initialize the class more than once.
+  bool initialized_;
 };
 
 // Backup factory to help ICE initialize the objects.
