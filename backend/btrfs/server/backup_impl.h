@@ -83,10 +83,6 @@ class BackupImpl : public backup_proto::Backup {
   // initializing the backup, whether it's full or otherwise.
   backup_proto::StatusPtr CreateFilesystemImage();
 
-  // Initialize the created filesystem image with symlinks from the previous
-  // backup image.
-  backup_proto::StatusPtr InitializeIncrementalBackup();
-
   // Whether we've initialized or not.  This is called every time a client-side
   // backup is created, so we don't want to initialize the class more than once.
   bool initialized_;

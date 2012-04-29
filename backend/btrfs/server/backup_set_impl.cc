@@ -15,6 +15,7 @@
 #include "backend/btrfs/server/backup_impl.h"
 #include "backend/btrfs/server/backup_set_impl.h"
 #include "backend/btrfs/server/global.h"
+#include "backend/btrfs/server/incremental_backup_initializer.h"
 #include "backend/btrfs/server/util.h"
 #include "boost/filesystem.hpp"
 #include "glog/logging.h"
@@ -156,6 +157,7 @@ StatusPtr BackupSetImpl::CreateBackup(
   proto_backup->set_size_in_mb(options.size_in_mb);
   proto_backup->set_path(backup_path.string());
 
+  // Initialize the backup, creating the filesystem image, initially blank.
   StatusPtr init_retval = proto_backup->Init();
   if (!init_retval->ok()) {
     LOG(ERROR) << mName << ": Failed to initialize backup: "
@@ -168,7 +170,6 @@ StatusPtr BackupSetImpl::CreateBackup(
   }
 
   descriptor_.backups.push_back(proto_backup);
-  LOG(INFO) << "Now at " << descriptor_.backups.size() << " backups";
 
   // Return the created backup set proto
   backup_ref = GetProxyById<backup_proto::Backup>(

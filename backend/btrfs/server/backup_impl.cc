@@ -48,15 +48,10 @@ StatusPtr BackupImpl::Init(const Ice::Current&) {
       return retval;
     }
 
-    // If this is a full backup, we're done -- files will be populated from the
-    // client in full.  Otherwise, we need to bring forward everything from the
-    // previous backup in the form of symlinks.
-    if (mType == backup_proto::kBackupTypeIncremental) {
-      retval = InitializeIncrementalBackup();
-      if (!retval->ok()) {
-        return retval;
-      }
-    }
+    // We're done at the end of this, whether it's an incremental backup or not.
+    // Symlinks from previous backups are applied *during* the backup, as the
+    // file linked to may not have the same path as previously due to copies or
+    // renames.
   }
 
   // The file exists -- make sure it's the right size.  If it isn't, that's a sure
@@ -124,17 +119,6 @@ StatusPtr BackupImpl::CreateFilesystemImage() {
           "Error executing command: Command returned error status");
     }
   }
-}
-
-StatusPtr BackupImpl::InitializeIncrementalBackup() {
-  // TODO: Support incremental backups.
-  path btrfs_image = path(mPath) / kBackupImageName;
-  if(unlink(btrfs_image.native().c_str()) == -1) {
-    LOG(ERROR) << "Cannot remove failed backup file: " << strerror(errno);
-  }
-  return new StatusImpl(
-      kStatusBackupCreateFailed,
-      "Incremental backups not (yet) supported");
 }
 
 }  // namespace backup
