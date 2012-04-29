@@ -95,6 +95,11 @@ StatusPtr BackupImpl::CreateFilesystemImage() {
                           string(strerror(errno)));
   }
 
+  // This bogus write here is necessary to actually get the file to the
+  // right size.  An lseek() should be enough, but seems to not be.
+  int foo = 1;
+  lseek(fd, -sizeof(foo), SEEK_CUR);
+  write(fd, &foo, sizeof(foo));
   close(fd);
 
   // Create the filesystem.  This requires the 'mkfs.btrfs' program be in
@@ -119,6 +124,7 @@ StatusPtr BackupImpl::CreateFilesystemImage() {
           "Error executing command: Command returned error status");
     }
   }
+  return new StatusImpl(kStatusOk);
 }
 
 }  // namespace backup
