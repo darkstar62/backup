@@ -109,8 +109,8 @@ StatusPtr BackupSetImpl::CreateBackup(
 
     for (backup_proto::BackupList::iterator iter = descriptor_.backups.begin();
          iter != descriptor_.backups.end(); ++iter) {
-      if ((*iter)->create_time > max_time) {
-        max_time = (*iter)->create_time;
+      if ((*iter)->get_create_time() > max_time) {
+        max_time = (*iter)->get_create_time();
         max_iter = iter;
       }
     }
@@ -127,8 +127,8 @@ StatusPtr BackupSetImpl::CreateBackup(
           "Incremental backup requested without existing backup");
     }
 
-    VLOG(3) << mName << ": Latest backup ID: " << (*max_iter)->id.name;
-    increment_of_id = (*max_iter)->id.name;
+    VLOG(3) << mName << ": Latest backup ID: " << (*max_iter)->get_id();
+    increment_of_id = (*max_iter)->get_id();
   }
 
   // Create a new directory in the backup set directory, and initialize the
@@ -146,16 +146,17 @@ StatusPtr BackupSetImpl::CreateBackup(
 
   // Create all the goo in the backup descriptor
   backup_proto::BackupPtr proto_backup = new BackupImpl;
-  proto_backup->description = options.description;
-  proto_backup->type = options.type;
-  proto_backup->id.name = new_uuid;
-  proto_backup->increment_of_id.name = increment_of_id;
-  proto_backup->create_time = time(NULL);
+  proto_backup->set_description(options.description);
+  proto_backup->set_type(options.type);
+  proto_backup->set_id(new_uuid);
+  proto_backup->set_increment_of_id(increment_of_id);
+  proto_backup->set_create_time(time(NULL));
   descriptor_.backups.push_back(proto_backup);
   LOG(INFO) << "Now at " << descriptor_.backups.size() << " backups";
 
   // Return the created backup set proto
-  backup_ref = GetProxyById<backup_proto::Backup>(proto_backup, proto_backup->id);
+  backup_ref = GetProxyById<backup_proto::Backup>(
+      proto_backup, proto_backup->get_id_as_identity());
   return new StatusImpl(kStatusOk);
 }
 
@@ -165,7 +166,8 @@ StatusPtr BackupSetImpl::EnumerateBackups(
   // Return a list of all the backup sets we're managing.
   for (int i = 0; i < descriptor_.backups.size(); ++i) {
     backup_proto::BackupPtr msg = descriptor_.backups.at(i);
-    backup_list_ref.push_back(GetProxyById<backup_proto::Backup>(msg, msg->id));
+    backup_list_ref.push_back(GetProxyById<backup_proto::Backup>(
+            msg, msg->get_id_as_identity()));
   }
 
   return new StatusImpl(kStatusOk);

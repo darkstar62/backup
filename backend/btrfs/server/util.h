@@ -13,7 +13,7 @@ namespace backup {
 // Utility function to map from an ICE object / ID to its proxy.
 template<typename T>
 typename T::ProxyType GetProxyById(
-    typename T::PointerType& obj, Ice::Identity& id) {
+    typename T::PointerType& obj, const Ice::Identity& id) {
   Ice::ObjectPtr found_obj = IceObjects::Instance()->adapter->find(id);
   typename T::ProxyType proxy;
   if (!found_obj.get()) {
