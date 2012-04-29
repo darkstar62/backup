@@ -18,12 +18,8 @@ class BtrfsBackup : public Backup {
   BtrfsBackup(backup_proto::BackupPrx backup_service);
   virtual ~BtrfsBackup() {}
 
-  // Initialize the backup.  For newly created backups, this will create the
-  // BTRFS filesystem image in the backup directory of the required size for
-  // the backup.  In the case of incremental backups, the previous backup is
-  // mounted and all file contents are linked in.
-  //
-  // Note, this can take some time.
+  // Initialize the backup.  This *shouldn't* cause the backup metadata to be
+  // created server side, as the server should call this on creation.
   bool Init();
 
   // Actually perform a backup, given a list of files to backup.  Returns true
