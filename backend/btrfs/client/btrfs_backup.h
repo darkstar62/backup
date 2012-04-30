@@ -25,7 +25,7 @@ class BtrfsBackup : public Backup {
 
   // Actually perform a backup, given a list of files to backup.  Returns true
   // if the backup is successful; false otherwise.
-  virtual bool DoBackup(const FileList& filelist) { return false; }
+  virtual bool DoBackup(const FileList& filelist);
 
   // Open the specified backup instance represented by this instance object
   // and return back a string path representing the instance's mounted

@@ -73,6 +73,14 @@ StatusPtr BackupImpl::Init(const Ice::Current&) {
   return new StatusImpl(kStatusOk);
 }
 
+backup_proto::FileList BackupImpl::CheckFileSizes(
+    const backup_proto::FileAndSizeList& files,
+    const Ice::Current&) {
+  // TODO(darkstar62): Implement this
+  backup_proto::FileList definitely_new;
+  return definitely_new;
+}
+
 StatusPtr BackupImpl::CreateFilesystemImage() {
   path btrfs_image = path(mPath) / kBackupImageName;
   int fd = open(btrfs_image.native().c_str(),

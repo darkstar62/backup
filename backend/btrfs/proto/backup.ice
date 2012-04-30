@@ -16,11 +16,24 @@ enum BackupType {
   kBackupTypeIncremental
 };
 
+struct FileAndSize {
+  string filename;
+  long size;
+};
+
+sequence<string> FileList;
+sequence<FileAndSize> FileAndSizeList;
+
 // An actual backup instance.
 class Backup {
   // Initialize the backup on the server.  This creates the BTRFS filesystem
   // image if it doesn't exist and populates it with symlinks if incremental.
   Status Init();
+
+  // Check the passed files and sizes against the backup metadata.  The
+  // returned list of files have sizes different than anything seen in
+  // the backup so far.
+  FileList CheckFileSizes(FileAndSizeList files);
 
   // Accessors for the client
   string get_id();

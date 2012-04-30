@@ -28,6 +28,12 @@ class BackupImpl : public backup_proto::Backup {
   // and initializing it if it doesn't exist already.
   virtual backup_proto::StatusPtr Init(const Ice::Current&);
 
+  // Given a list of files and their sizes, figure out which file sizes we
+  // haven't seen thus far and return the names.  This forms a set of files
+  // which we know we need to transfer fully.
+  virtual backup_proto::FileList CheckFileSizes(
+      const backup_proto::FileAndSizeList& files, const Ice::Current&);
+
   // Get/set the unique ID for this backup.
   virtual std::string get_id(const Ice::Current&) { return mId.name; }
   virtual Ice::Identity get_id_as_identity(const Ice::Current&) { return mId; }
