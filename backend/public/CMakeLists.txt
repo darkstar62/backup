@@ -6,7 +6,8 @@ PROJECT(backup_client_storage_public)
 # LIBRARY: public
     ADD_LIBRARY(
         backend.public
-	        backup.h
+            backup.h
             backup_set.h
-	        file_list.h)
+            file_list.cc
+            file_list.h)
 

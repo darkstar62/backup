@@ -1,7 +1,12 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <cstdio>
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -61,6 +66,8 @@ int CliMain::RunCommand() {
     return CreateFullBackup();
   } else if (command_ == "list_backups") {
     return ListBackups();
+  } else if (command_ == "backup") {
+    return DoBackup();
   }
 
   LOG(ERROR) << "Invalid command: " << command_;
@@ -164,6 +171,71 @@ int CliMain::ListBackups() {
              "incremental: " : "full: ")
          << (*iter)->description() << endl;
     delete *iter;
+  }
+  return EXIT_SUCCESS;
+}
+
+int CliMain::DoBackup() {
+  CHECK_EQ(3, args_.size())
+      << "Must specify a backup set, backup, and file list.";
+  string backup_set_id = args_.at(0);
+  string backup_id = args_.at(1);
+  string filelist = args_.at(2);
+
+  // Get the backup set
+  BackupSet* backup_set = GetBackupSet(backup_set_id);
+  if (!backup_set) {
+    return EXIT_FAILURE;
+  }
+
+  // Get the backup.
+  vector<Backup*> sets = backup_set->EnumerateBackups();
+  Backup* backup = NULL;
+  for (vector<Backup*>::iterator iter = sets.begin();
+       iter != sets.end(); ++iter) {
+    if ((*iter)->id() == backup_id) {
+      backup = *iter;
+      break;
+    }
+  }
+  if (!backup) {
+    LOG(FATAL) << "Could not find backup " << backup_id;
+  }
+
+  // Read the list of files from the filelist.
+  string block;
+  string data;
+  int fd = open(filelist.c_str(), O_RDONLY);
+  if (fd == -1) {
+    LOG(FATAL) << "Could not open filelist: " << strerror(errno);
+  }
+
+  ssize_t bytes_read = 0;
+  do {
+    block.resize(256);
+    bytes_read = read(fd, &block.at(0), 256);
+    block.resize(bytes_read);
+    data += block;
+  } while (bytes_read);
+
+  FileList files;
+  int pos = 0;
+  int old_pos = 0;
+  while ((pos = data.find('\n', old_pos)) != string::npos) {
+    string file = data.substr(old_pos, pos - old_pos);
+    if (file.size()) {
+      files.AddEntry(file);
+    }
+    old_pos = pos + 1;
+  }
+  string file = data.substr(old_pos);
+  if (file.size()) {
+    files.AddEntry(file);
+  }
+
+  // Start the backup.
+  if (!backup->DoBackup(files)) {
+    LOG(FATAL) << "Error performing backup";
   }
   return EXIT_SUCCESS;
 }

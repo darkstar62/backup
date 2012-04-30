@@ -50,6 +50,9 @@ class CliMain {
   // the "list_backups" command.
   int ListBackups();
 
+  // Do a backup.  Implements the "backup" command.
+  int DoBackup();
+
   // Get a backup set by ID from the backend.
   BackupSet* GetBackupSet(std::string id);
 
