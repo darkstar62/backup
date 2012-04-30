@@ -24,18 +24,18 @@ class BackupSetImpl : public backup_proto::BackupSet {
 
   // Initialize the backup set descriptor and get the server-side backup
   // set ready to use client-side.
-  backup_proto::StatusPtr Init(const Ice::Current&);
+  backup_proto::StatusPtr Init(const Ice::Current& current);
 
   // Create a backup.
   backup_proto::StatusPtr CreateBackup(
       const backup_proto::BackupOptions& options,
       backup_proto::BackupPrx& backup_ref,
-      const Ice::Current&);
+      const Ice::Current& current);
 
   // Enumerate the backups in the set.
   backup_proto::StatusPtr EnumerateBackups(
       backup_proto::BackupPtrList& backup_list_ref,
-      const Ice::Current&);
+      const Ice::Current& current);
 
   // Accessors for the ID.
   std::string get_id(const Ice::Current&) { return id.name; }
@@ -51,6 +51,9 @@ class BackupSetImpl : public backup_proto::BackupSet {
 
   // Whether we've initialied or not
   bool initialized_;
+
+  // Communicator associated with the object
+  Ice::CommunicatorPtr ic_;
 
   DISALLOW_COPY_AND_ASSIGN(BackupSetImpl);
 };

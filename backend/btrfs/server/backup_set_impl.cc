@@ -15,7 +15,6 @@
 #include "backend/btrfs/proto/status.proto.h"
 #include "backend/btrfs/proto/status_impl.h"
 #include "backend/btrfs/server/backup_impl.h"
-#include "backend/btrfs/server/global.h"
 #include "backend/btrfs/server/util.h"
 #include "boost/filesystem.hpp"
 #include "glog/logging.h"
@@ -39,8 +38,7 @@ BackupSetImpl::~BackupSetImpl() {
   path desc_path = path(mPath) / "backup_set_descriptor.cfg";
 
   // Convert the list of backup sets to a data stream we can write.
-  Ice::OutputStreamPtr out = Ice::createOutputStream(
-      IceObjects::Instance()->ic);
+  Ice::OutputStreamPtr out = Ice::createOutputStream(ic_);
   out->write(descriptor_);
   out->writePendingObjects();
 
@@ -53,10 +51,12 @@ BackupSetImpl::~BackupSetImpl() {
   output.close();
 }
 
-StatusPtr BackupSetImpl::Init(const Ice::Current&) {
+StatusPtr BackupSetImpl::Init(const Ice::Current& current) {
   if (initialized_) {
     return new StatusImpl(kStatusOk);
   }
+
+  ic_ = current.adapter->getCommunicator();
 
   // Look for our backup set -- it'll be in the path given to us by the
   // backend.
@@ -85,8 +85,7 @@ StatusPtr BackupSetImpl::Init(const Ice::Current&) {
     input.read(reinterpret_cast<char*>(&in_stream.at(0)), in_stream.size());
     input.close();
 
-    Ice::InputStreamPtr in = Ice::createInputStream(
-        IceObjects::Instance()->ic, in_stream);
+    Ice::InputStreamPtr in = Ice::createInputStream(ic_, in_stream);
     in->read(descriptor_);
     in->readPendingObjects();
   }
@@ -98,7 +97,7 @@ StatusPtr BackupSetImpl::Init(const Ice::Current&) {
 StatusPtr BackupSetImpl::CreateBackup(
     const backup_proto::BackupOptions& options,
     backup_proto::BackupPrx& backup_ref,
-    const Ice::Current&) {
+    const Ice::Current& current) {
   LOG(INFO) << mName << ": Create backup: " << options.description;
 
   // Consistency check the backup parameters -- incremental backups require
@@ -174,18 +173,19 @@ StatusPtr BackupSetImpl::CreateBackup(
 
   // Return the created backup set proto
   backup_ref = GetProxyById<backup_proto::Backup>(
-      proto_backup, proto_backup->get_id_as_identity());
+      current.adapter, proto_backup,
+      proto_backup->get_id_as_identity());
   return new StatusImpl(kStatusOk);
 }
 
 StatusPtr BackupSetImpl::EnumerateBackups(
     backup_proto::BackupPtrList& backup_list_ref,
-    const Ice::Current&) {
+    const Ice::Current& current) {
   // Return a list of all the backup sets we're managing.
   for (int i = 0; i < descriptor_.backups.size(); ++i) {
     backup_proto::BackupPtr msg = descriptor_.backups.at(i);
     backup_list_ref.push_back(GetProxyById<backup_proto::Backup>(
-            msg, msg->get_id_as_identity()));
+            current.adapter, msg, msg->get_id_as_identity()));
   }
 
   return new StatusImpl(kStatusOk);

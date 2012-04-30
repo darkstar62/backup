@@ -12,7 +12,6 @@
 #include "backend/btrfs/proto/status.proto.h"
 #include "backend/btrfs/proto/status_impl.h"
 #include "backend/btrfs/server/backup_set_impl.h"
-#include "backend/btrfs/server/global.h"
 #include "backend/btrfs/server/util.h"
 #include "base/string.h"
 #include "boost/filesystem.hpp"
@@ -31,10 +30,12 @@ using std::vector;
 
 namespace backup {
 
-BtrfsBackendServiceImpl::BtrfsBackendServiceImpl(const std::string& path)
+BtrfsBackendServiceImpl::BtrfsBackendServiceImpl(
+    Ice::CommunicatorPtr ic, const std::string& path)
     : BtrfsBackendService(),
       path_(boost::filesystem::path(path)),
-      backup_descriptor_(new backup_proto::BackupDescriptor) {
+      backup_descriptor_(new backup_proto::BackupDescriptor),
+      ic_(ic) {
   // Verify the path given exists and is a directory.
   if (!boost::filesystem::exists(path_) ||
       !boost::filesystem::is_directory(path_)) {
@@ -47,8 +48,7 @@ BtrfsBackendServiceImpl::~BtrfsBackendServiceImpl() {
   path desc_path = path_ / "backup_descriptor.cfg";
 
   // Convert the list of backup sets to a data stream we can write.
-  Ice::OutputStreamPtr out = Ice::createOutputStream(
-      IceObjects::Instance()->ic);
+  Ice::OutputStreamPtr out = Ice::createOutputStream(ic_);
   out->write(backup_descriptor_);
   out->writePendingObjects();
 
@@ -72,8 +72,7 @@ bool BtrfsBackendServiceImpl::Init() {
     input.read(reinterpret_cast<char*>(&in_stream.at(0)), in_stream.size());
     input.close();
 
-    Ice::InputStreamPtr in = Ice::createInputStream(
-        IceObjects::Instance()->ic, in_stream);
+    Ice::InputStreamPtr in = Ice::createInputStream(ic_, in_stream);
     in->read(backup_descriptor_);
     in->readPendingObjects();
   }
@@ -93,7 +92,8 @@ backup_proto::BackupSetPtrList BtrfsBackendServiceImpl::EnumerateBackupSets(
   backup_proto::BackupSetPtrList retval;
   for (int i = 0; i < backup_descriptor_->backup_sets.size(); ++i) {
     backup_proto::BackupSetPtr msg = backup_descriptor_->backup_sets.at(i);
-    retval.push_back(GetProxyById<backup_proto::BackupSet>(msg, msg->id));
+    retval.push_back(GetProxyById<backup_proto::BackupSet>(
+            current.adapter, msg, msg->id));
   }
   return retval;
 }
@@ -123,7 +123,8 @@ StatusPtr BtrfsBackendServiceImpl::CreateBackupSet(
   backup_descriptor_->backup_sets.push_back(proto_set);
 
   // Return the created backup set proto
-  set_ref = GetProxyById<backup_proto::BackupSet>(proto_ptr, proto_set->id);
+  set_ref = GetProxyById<backup_proto::BackupSet>(
+      current.adapter, proto_ptr, proto_set->id);
   return new StatusImpl(kStatusOk);
 }
 
@@ -135,7 +136,8 @@ StatusPtr BtrfsBackendServiceImpl::GetBackupSet(
        iter != backup_descriptor_->backup_sets.end();
        ++iter) {
     if ((*iter)->id.name == id) {
-      set_ref = GetProxyById<backup_proto::BackupSet>(*iter, (*iter)->id);
+      set_ref = GetProxyById<backup_proto::BackupSet>(
+          current.adapter, *iter, (*iter)->id);
       return new StatusImpl(kStatusOk);
     }
   }

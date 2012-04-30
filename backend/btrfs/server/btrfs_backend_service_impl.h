@@ -23,7 +23,8 @@ class BtrfsBackendServiceImpl : public backup_proto::BtrfsBackendService {
  public:
   // Initialize the backend service.  The backup sets are enumberated from the
   // given path on the server filesystem.
-  explicit BtrfsBackendServiceImpl(const std::string& path);
+  explicit BtrfsBackendServiceImpl(
+      Ice::CommunicatorPtr ic, const std::string& path);
   virtual ~BtrfsBackendServiceImpl();
 
   // Initialize the backend.  Returns true if successful, false otherwise.
@@ -53,7 +54,13 @@ class BtrfsBackendServiceImpl : public backup_proto::BtrfsBackendService {
   // all operations the server needs to perform.
   const boost::filesystem::path path_;
 
+  // Backup descriptor containing info about all the backup sets in the
+  // managed directory.
   backup_proto::BackupDescriptorPtr backup_descriptor_;
+
+  // The ICE communicator to use for serializing and deserializing the
+  // descriptor.
+  Ice::CommunicatorPtr ic_;
 
   DISALLOW_COPY_AND_ASSIGN(BtrfsBackendServiceImpl);
 };
