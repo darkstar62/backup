@@ -15,9 +15,17 @@ int main(int argc, char* argv[]) {
       "        List the available backup sets.\n\n"
       "    create_backup_set <backup set name>\n"
       "        Create a backup set with the given name.\n\n"
-      "    create_incremental_backup <backup set> <backup name> <size_in_mb>\n"
+      "    create_incremental_backup <backup set id> <backup name> <size_in_mb>\n"
       "        Create an incremental backup in the given backup set with at most\n"
-      "        <size_in_mb> megabytes.");
+      "        <size_in_mb> megabytes.\n\n"
+      "    create_full_backup <backup set id> <backup name> <size_in_mb>\n"
+      "        Create a full backup in the given backup set with at most\n"
+      "        <size_in_mb> megabytes.\n\n"
+      "    list_backups <backup set id>\n"
+      "        List the backups in the given backup set.\n\n"
+      "    backup <backup set id> <backup id> <path to filelist>\n"
+      "        Perform a backup to the given backup ID, saving the files listed\n"
+      "        in the filelist file.  Files should be line-separated.");
 
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
