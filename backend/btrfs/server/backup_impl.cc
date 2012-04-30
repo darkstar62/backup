@@ -1,6 +1,8 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
+#include "backend/btrfs/server/backup_impl.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -14,7 +16,6 @@
 
 #include "Ice/Ice.h"
 #include "backend/btrfs/proto/status.proto.h"
-#include "backend/btrfs/server/backup_impl.h"
 #include "boost/filesystem.hpp"
 #include "glog/logging.h"
 

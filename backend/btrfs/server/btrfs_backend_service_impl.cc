@@ -1,6 +1,8 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
+#include "backend/btrfs/server/btrfs_backend_service_impl.h"
+
 #include <fstream>
 #include <vector>
 
@@ -10,7 +12,6 @@
 #include "backend/btrfs/proto/status.proto.h"
 #include "backend/btrfs/proto/status_impl.h"
 #include "backend/btrfs/server/backup_set_impl.h"
-#include "backend/btrfs/server/btrfs_backend_service_impl.h"
 #include "backend/btrfs/server/global.h"
 #include "backend/btrfs/server/util.h"
 #include "base/string.h"

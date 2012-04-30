@@ -2,6 +2,7 @@
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
 #include "backend/public/file_list.h"
+
 #include "boost/filesystem.hpp"
 #include "glog/logging.h"
 

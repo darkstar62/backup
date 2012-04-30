@@ -1,10 +1,11 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
+#include "backend/btrfs/client/btrfs_backup_set.h"
+
 #include <vector>
 
 #include "backend/btrfs/client/btrfs_backup.h"
-#include "backend/btrfs/client/btrfs_backup_set.h"
 #include "backend/btrfs/proto/status.proto.h"
 #include "backend/public/backup.h"
 #include "backend/public/backup_set.h"

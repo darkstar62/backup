@@ -1,6 +1,8 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
+#include "client/ui/cli/cli_client.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -14,7 +16,6 @@
 #include "backend/btrfs/client/btrfs_storage_backend.h"
 #include "backend/public/backup.h"
 #include "backend/public/backup_set.h"
-#include "client/ui/cli/cli_client.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 
