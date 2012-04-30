@@ -16,14 +16,14 @@
 
 namespace backup {
 
-// BTRFS backend service implementation.  This implements the RPC protocol between
-// the client and the server, and is responsible for most of what goes on server-
-// side for this backend.
+// BTRFS backend service implementation.  This implements the RPC protocol
+// between the client and the server, and is responsible for most of what
+// goes on server-side for this backend.
 class BtrfsBackendServiceImpl : public backup_proto::BtrfsBackendService {
  public:
-  // Initialize the backend service.  The backup sets are enumberated from the given
-  // path on the server filesystem.
-  BtrfsBackendServiceImpl(const std::string& path);
+  // Initialize the backend service.  The backup sets are enumberated from the
+  // given path on the server filesystem.
+  explicit BtrfsBackendServiceImpl(const std::string& path);
   virtual ~BtrfsBackendServiceImpl();
 
   // Initialize the backend.  Returns true if successful, false otherwise.
@@ -49,9 +49,8 @@ class BtrfsBackendServiceImpl : public backup_proto::BtrfsBackendService {
       const Ice::Current& current);
 
  private:
-
-  // Path to the backup sets on the server filesystem.  This path is used for all
-  // operations the server needs to perform.
+  // Path to the backup sets on the server filesystem.  This path is used for
+  // all operations the server needs to perform.
   const boost::filesystem::path path_;
 
   backup_proto::BackupDescriptorPtr backup_descriptor_;

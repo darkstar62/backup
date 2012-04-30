@@ -9,7 +9,7 @@
 #include <string>
 
 template<class T>
-const std::string ToString(T& value) {
+const std::string ToString(const T& value) {
   std::ostringstream strstr;
   strstr << value;
   return strstr.str();

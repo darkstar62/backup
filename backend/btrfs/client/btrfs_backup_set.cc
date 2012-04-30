@@ -44,7 +44,8 @@ vector<Backup*> BtrfsBackupSet::EnumerateBackups() {
        iter != backup_list.end(); ++iter) {
     BtrfsBackup* backup = new BtrfsBackup(*iter);
     if (!backup->Init()) {
-      LOG(ERROR) << "Failed to initialize backup " << (*iter)->get_description();
+      LOG(ERROR) << "Failed to initialize backup "
+                 << (*iter)->get_description();
       continue;
     }
     backups.push_back(backup);

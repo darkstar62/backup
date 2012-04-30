@@ -1,13 +1,14 @@
 // Copyright (C) 2012, All Rights Reserved.
 // Author: Cory Maccarrone <darkstar6262@gmail.com>
 
-#ifndef BACKUP_CLIENT_UI_CLI_CLIENT_H_
-#define BACKUP_CLIENT_UI_CLI_CLIENT_H_
+#ifndef BACKUP_CLIENT_UI_CLI_CLI_CLIENT_H_
+#define BACKUP_CLIENT_UI_CLI_CLI_CLIENT_H_
 
 #include <string>
 #include <vector>
 
 #include "backend/public/storage_backend.h"
+#include "base/macros.h"
 #include "boost/scoped_ptr.hpp"
 
 namespace backup {
@@ -62,7 +63,9 @@ class CliMain {
   // The command and the arguments passed
   std::string command_;
   std::vector<std::string> args_;
+
+  DISALLOW_COPY_AND_ASSIGN(CliMain);
 };
 
 }  // namespace backup
-#endif  // BACKUP_CLIENT_UI_CLI_CLIENT_H_
+#endif  // BACKUP_CLIENT_UI_CLI_CLI_CLIENT_H_

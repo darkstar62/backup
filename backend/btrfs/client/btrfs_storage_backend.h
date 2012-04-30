@@ -33,9 +33,9 @@ class BtrfsStorageBackend : public StorageBackend {
 
   // Attempt to create a backup set on the storage backend representing
   // the passed backup parameters.  If successful, this returns a new BackupSet
-  // representing the set (ownership remains with the StorageBackend), pointed to
-  // by the passed pointer and the function returns true.  Otherwise, the pointer
-  // is left alone and the function returns false.
+  // representing the set (ownership remains with the StorageBackend), pointed
+  // to by the passed pointer and the function returns true.  Otherwise, the
+  // pointer is left alone and the function returns false.
   //
   // For BTRFS, this simply adds an entry for the backup set in the backup
   // descriptor -- it does not modify or create any filesystems.

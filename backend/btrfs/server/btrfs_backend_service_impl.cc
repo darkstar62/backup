@@ -47,7 +47,8 @@ BtrfsBackendServiceImpl::~BtrfsBackendServiceImpl() {
   path desc_path = path_ / "backup_descriptor.cfg";
 
   // Convert the list of backup sets to a data stream we can write.
-  Ice::OutputStreamPtr out = Ice::createOutputStream(IceObjects::Instance()->ic);
+  Ice::OutputStreamPtr out = Ice::createOutputStream(
+      IceObjects::Instance()->ic);
   out->write(backup_descriptor_);
   out->writePendingObjects();
 
@@ -55,7 +56,8 @@ BtrfsBackendServiceImpl::~BtrfsBackendServiceImpl() {
   out->finished(out_stream);
 
   fstream output(desc_path.string().c_str(), ios::out | ios::binary);
-  output.write(reinterpret_cast<const char*>(&out_stream.at(0)), out_stream.size());
+  output.write(
+      reinterpret_cast<const char*>(&out_stream.at(0)), out_stream.size());
   output.close();
 }
 

@@ -55,8 +55,8 @@ StatusPtr BackupImpl::Init(const Ice::Current&) {
     // renames.
   }
 
-  // The file exists -- make sure it's the right size.  If it isn't, that's a sure
-  // sign of corruption.
+  // The file exists -- make sure it's the right size.  If it isn't, that's a
+  // sure sign of corruption.
   if (boost::filesystem::file_size(btrfs_image) != mSize_in_mb * 1024 * 1024) {
     ostringstream reason;
     reason << "Filesystem size doesn't match: Expected "
@@ -75,7 +75,8 @@ StatusPtr BackupImpl::Init(const Ice::Current&) {
 
 StatusPtr BackupImpl::CreateFilesystemImage() {
   path btrfs_image = path(mPath) / kBackupImageName;
-  int fd = open(btrfs_image.native().c_str(), O_RDWR | O_CREAT | O_TRUNC | O_EXCL,
+  int fd = open(btrfs_image.native().c_str(),
+                O_RDWR | O_CREAT | O_TRUNC | O_EXCL,
                 S_IRUSR | S_IWUSR);
   if (fd == -1) {
     LOG(ERROR) << "Could not create backup filesystem: " << strerror(errno);
@@ -88,7 +89,7 @@ StatusPtr BackupImpl::CreateFilesystemImage() {
     LOG(ERROR) << "Could not resize backup filesystem: "
                << "Error " << errno << ": " << strerror(errno);
     close(fd);
-    if(unlink(btrfs_image.native().c_str()) == -1) {
+    if (unlink(btrfs_image.native().c_str()) == -1) {
       LOG(ERROR) << "Cannot remove failed backup file: " << strerror(errno);
     }
     return new StatusImpl(kStatusBackupCreateFailed,
@@ -109,7 +110,7 @@ StatusPtr BackupImpl::CreateFilesystemImage() {
   LOG(INFO) << "Executing command: " << command;
   int retval = system(command.c_str());
   if (retval != 0) {
-    if(unlink(btrfs_image.native().c_str()) == -1) {
+    if (unlink(btrfs_image.native().c_str()) == -1) {
       LOG(ERROR) << "Cannot remove failed backup file: " << strerror(errno);
     }
 

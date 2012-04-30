@@ -5,9 +5,11 @@
 
 #include <iostream>
 #include <sstream>
+#include <string>
 
 #include "Ice/Ice.h"
 #include "backend/btrfs/proto/status.proto.h"
+#include "base/macros.h"
 #include "glog/logging.h"
 
 namespace backup_proto {
@@ -28,6 +30,9 @@ class StatusImpl : public Status {
 
   // Convert the status object to a string representation.  Useful for logging.
   virtual std::string ToString(const Ice::Current& current);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StatusImpl);
 };
 
 class StatusFactory : public Ice::ObjectFactory {

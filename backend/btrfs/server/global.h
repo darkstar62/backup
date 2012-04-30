@@ -8,6 +8,7 @@
 #define BACKUP_BACKEND_BTRFS_SERVER_GLOBAL_H_
 
 #include "Ice/Ice.h"
+#include "base/macros.h"
 
 namespace backup {
 
@@ -27,6 +28,8 @@ class IceObjects {
  private:
   IceObjects() {}
   ~IceObjects() {}
+
+  DISALLOW_COPY_AND_ASSIGN(IceObjects);
 };
 
 }  // namespace backup

@@ -163,8 +163,9 @@ StatusPtr BackupSetImpl::CreateBackup(
     LOG(ERROR) << mName << ": Failed to initialize backup: "
                << init_retval->ToString();
     if (rmdir(backup_path.native().c_str()) == -1) {
-      LOG(ERROR) << mName << ": Additionally, failed to delete backup directory "
-                 << backup_path.native() << ": " << string(strerror(errno));
+      LOG(ERROR)
+          << mName << ": Additionally, failed to delete backup directory "
+          << backup_path.native() << ": " << string(strerror(errno));
     }
     return init_retval;
   }

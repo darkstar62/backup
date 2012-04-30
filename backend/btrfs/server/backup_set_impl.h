@@ -8,6 +8,7 @@
 
 #include "Ice/Ice.h"
 #include "backend/btrfs/proto/backup_descriptor.proto.h"
+#include "base/macros.h"
 #include "glog/logging.h"
 
 namespace backup {
@@ -50,11 +51,14 @@ class BackupSetImpl : public backup_proto::BackupSet {
 
   // Whether we've initialied or not
   bool initialized_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackupSetImpl);
 };
 
 // BackupSet factory to help ICE initialize the objects.
 class BackupSetFactory : public Ice::ObjectFactory {
  public:
+  BackupSetFactory() {}
   virtual Ice::ObjectPtr create(const std::string& type) {
     CHECK_EQ(backup_proto::BackupSet::ice_staticId(), type);
     return new BackupSetImpl;
@@ -65,6 +69,9 @@ class BackupSetFactory : public Ice::ObjectFactory {
     ic->addObjectFactory(new BackupSetFactory,
                          backup_proto::BackupSet::ice_staticId());
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BackupSetFactory);
 };
 
 }  // namespace backup

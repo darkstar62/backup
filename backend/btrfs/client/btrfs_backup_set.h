@@ -20,7 +20,7 @@ class Backup;
 // on a remote server.
 class BtrfsBackupSet : public BackupSet {
  public:
-  BtrfsBackupSet(backup_proto::BackupSetPrx set_msg)
+  explicit BtrfsBackupSet(backup_proto::BackupSetPrx set_msg)
       : BackupSet(set_msg->get_id(), set_msg->get_name()),
         server_set_(set_msg) {}
   virtual ~BtrfsBackupSet() {}

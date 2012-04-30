@@ -4,10 +4,13 @@
 #ifndef BACKUP_BACKEND_BTRFS_SERVER_BACKUP_IMPL_H_
 #define BACKUP_BACKEND_BTRFS_SERVER_BACKUP_IMPL_H_
 
+#include <string>
+
 #include "Ice/Ice.h"
 #include "backend/btrfs/proto/backup.proto.h"
 #include "backend/btrfs/proto/status.proto.h"
 #include "backend/btrfs/proto/status_impl.h"
+#include "base/macros.h"
 
 namespace backup {
 
@@ -33,8 +36,8 @@ class BackupImpl : public backup_proto::Backup {
   }
 
   // Get/set the creation time for this backup.
-  virtual long get_create_time(const Ice::Current&) { return mCreate_time; }
-  virtual void set_create_time(long time, const Ice::Current&) {
+  virtual int64_t get_create_time(const Ice::Current&) { return mCreate_time; }
+  virtual void set_create_time(int64_t time, const Ice::Current&) {
     mCreate_time = time;
   }
 
@@ -55,8 +58,8 @@ class BackupImpl : public backup_proto::Backup {
   }
 
   // Get/set the size of the backup in MB.
-  virtual long get_size_in_mb(const Ice::Current&) { return mSize_in_mb; }
-  virtual void set_size_in_mb(const long size, const Ice::Current&) {
+  virtual int64_t get_size_in_mb(const Ice::Current&) { return mSize_in_mb; }
+  virtual void set_size_in_mb(const int64_t size, const Ice::Current&) {
     mSize_in_mb = size;
   }
 
@@ -86,11 +89,14 @@ class BackupImpl : public backup_proto::Backup {
   // Whether we've initialized or not.  This is called every time a client-side
   // backup is created, so we don't want to initialize the class more than once.
   bool initialized_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackupImpl);
 };
 
 // Backup factory to help ICE initialize the objects.
 class BackupFactory : public Ice::ObjectFactory {
  public:
+  BackupFactory() {}
   virtual Ice::ObjectPtr create(const std::string& type) {
     CHECK_EQ(backup_proto::Backup::ice_staticId(), type);
     return new BackupImpl;
@@ -101,6 +107,9 @@ class BackupFactory : public Ice::ObjectFactory {
     ic->addObjectFactory(new BackupFactory,
                          backup_proto::Backup::ice_staticId());
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BackupFactory);
 };
 
 }  // namespace backup

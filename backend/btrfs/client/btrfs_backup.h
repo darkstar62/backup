@@ -9,13 +9,14 @@
 #include "backend/public/backup.h"
 #include "backend/public/file_list.h"
 #include "backend/btrfs/proto/backup.proto.h"
+#include "base/macros.h"
 
 namespace backup {
 
 // BtrfsBackup is the BTRFS implementation of the Backup interface.
 class BtrfsBackup : public Backup {
  public:
-  BtrfsBackup(backup_proto::BackupPrx backup_service);
+  explicit BtrfsBackup(backup_proto::BackupPrx backup_service);
   virtual ~BtrfsBackup() {}
 
   // Initialize the backup.  This *shouldn't* cause the backup metadata to be

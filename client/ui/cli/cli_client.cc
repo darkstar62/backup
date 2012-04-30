@@ -106,7 +106,7 @@ int CliMain::CreateIncrementalBackup() {
   string backup_name = args_.at(1);
   uint64_t backup_size_mb;
 
-  CHECK_EQ(1, sscanf(args_.at(2).c_str(), "%lu", &backup_size_mb))
+  CHECK_EQ(1, sscanf(args_.at(2).c_str(), "%lu", &backup_size_mb))  // NOLINT
       << "Third argument must be a positive integer";
 
   // Find the backup set.
@@ -134,7 +134,7 @@ int CliMain::CreateFullBackup() {
   string backup_name = args_.at(1);
   uint64_t backup_size_mb;
 
-  CHECK_EQ(1, sscanf(args_.at(2).c_str(), "%lu", &backup_size_mb))
+  CHECK_EQ(1, sscanf(args_.at(2).c_str(), "%lu", &backup_size_mb))  // NOLINT
       << "Third argument must be a positive integer";
 
   BackupSet* backup_set = GetBackupSet(backup_set_id);

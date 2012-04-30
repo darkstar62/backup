@@ -18,7 +18,7 @@ enum BackupType {
   kBackupTypeFull
 };
 
-class Backup{
+class Backup {
  public:
   Backup(const std::string& id, const std::string& description)
       : id_(id),
@@ -28,7 +28,7 @@ class Backup{
 
   // Actually perform a backup, given a list of files to backup.  Returns true
   // if the backup is successful; false otherwise.
-  // TODO: Make this asynchronous.
+  // TODO(darkstar62): Make this asynchronous.
   virtual bool DoBackup(const FileList& filelist) = 0;
 
   // Open the specified backup instance represented by this instance object

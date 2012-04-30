@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
+
 namespace backup {
 
 class BackupSet;
@@ -29,14 +31,17 @@ class StorageBackend {
 
   // Attempt to create a backup set on the storage backend representing
   // the passed backup parameters.  If successful, this returns a new BackupSet
-  // representing the set (ownership remains with the StorageBackend), pointed to
-  // by the passed pointer and the function returns true.  Otherwise, the pointer
-  // is left alone and the function returns false.
+  // representing the set (ownership remains with the StorageBackend), pointed
+  // to by the passed pointer and the function returns true.  Otherwise, the
+  // pointer is left alone and the function returns false.
   virtual bool CreateBackupSet(std::string name, BackupSet** backup_set) = 0;
 
   // Retrieve the backup set with the given name.  If the backup set cannot
   // be found or an error occurs, this returns NULL.
   virtual BackupSet* GetBackupSet(std::string name) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StorageBackend);
 };
 
 }  // namespace backup

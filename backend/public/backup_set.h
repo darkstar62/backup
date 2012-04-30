@@ -46,6 +46,8 @@ class BackupOptions {
   std::string id_;
   std::string description_;
   uint64_t size_in_mb_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackupOptions);
 };
 
 // A representation of a backup set.  Backup sets contain one or more
@@ -92,6 +94,8 @@ class BackupSet {
 
   // Description of this backup set.
   const std::string description_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackupSet);
 };
 
 }  // namespace backup
