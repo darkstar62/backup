@@ -3,7 +3,7 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 PROJECT(backup_backend_btrfs_server)
 
-INCLUDE(Slice2Cpp)
+INCLUDE(LintRules)
 
 FIND_PACKAGE(Boost COMPONENTS system filesystem REQUIRED)
 FIND_PACKAGE(Ice REQUIRED)
@@ -12,10 +12,13 @@ FIND_PACKAGE(Glog REQUIRED)
 
 # Implementation of the server-side backup.
 # LIBRARY: backup
+    LINT_SOURCES(
+        backend.btrfs.server.backup_SOURCES
+            backup_impl.cc
+            backup_impl.h)
     ADD_LIBRARY(
         backend.btrfs.server.backup
-            backup_impl.cc
-            backup_impl.h
+            ${backend.btrfs.server.backup_SOURCES}
             ${Boost_FILESYSTEM_LIBRARY}
             ${GLOG_LIBRARY})
     ADD_DEPENDENCIES(

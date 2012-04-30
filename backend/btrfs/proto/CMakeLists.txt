@@ -3,6 +3,7 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 PROJECT(backup_backend_btrfs_proto)
 
+INCLUDE(LintRules)
 INCLUDE(Slice2Cpp)
 
 FIND_PACKAGE(Ice REQUIRED)
@@ -13,10 +14,13 @@ FIND_PACKAGE(Glog REQUIRED)
     GENERATE_SLICE2CPP_RULES(
         status_proto_sources status_proto_headers
             status.ice)
+    LINT_SOURCES(
+        backend.btrfs.proto.status_proto_SOURCES
+            status_impl.cc
+            status_impl.h)
     ADD_LIBRARY(
         backend.btrfs.proto.status_proto
-            status_impl.cc
-            status_impl.h
+            ${backend.btrfs.proto.status_proto_SOURCES}
             ${status_proto_sources}
             ${status_proto_headers}
             ${GLOG_LIBRARY})

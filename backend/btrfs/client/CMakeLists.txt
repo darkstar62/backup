@@ -3,20 +3,25 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 PROJECT(backup_backend_btrfs_client)
 
+INCLUDE(LintRules)
+
 FIND_PACKAGE(Boost COMPONENTS system filesystem REQUIRED)
 FIND_PACKAGE(Ice REQUIRED)
 FIND_PACKAGE(Glog REQUIRED)
 
 # The backend client interface
 # LIBRARY: storage_backend
-    ADD_LIBRARY(
-        backend.btrfs.client.storage_backend
+    LINT_SOURCES(
+        backend.btrfs.client.storage_backend_SOURCES
             btrfs_backup.cc
             btrfs_backup.h
             btrfs_backup_set.cc
             btrfs_backup_set.h
             btrfs_storage_backend.cc
-            btrfs_storage_backend.h
+            btrfs_storage_backend.h)
+    ADD_LIBRARY(
+        backend.btrfs.client.storage_backend
+            ${backend.btrfs.client.storage_backend_SOURCES}
             ${service_proto_headers}
             ${status_proto_headers})
     TARGET_LINK_LIBRARIES(
