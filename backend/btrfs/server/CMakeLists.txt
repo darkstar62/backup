@@ -9,6 +9,28 @@ FIND_PACKAGE(Boost COMPONENTS system filesystem REQUIRED)
 FIND_PACKAGE(Ice REQUIRED)
 FIND_PACKAGE(GFlags REQUIRED)
 FIND_PACKAGE(Glog REQUIRED)
+FIND_PACKAGE(Sqlite3 REQUIRED)
+
+# SQLite3 wrapper library.
+# LIBRARY: sqlite
+    LINT_SOURCES(
+        backend.btrfs.server.sqlite_SOURCES
+            sqlite.cc
+            sqlite.h)
+    ADD_LIBRARY(
+        backend.btrfs.server.sqlite
+            ${backend.btrfs.server.sqlite_SOURCES}
+            ${Boost_SYSTEM_LIBRARY}
+            ${GLOG_LIBRARY})
+    ADD_DEPENDENCIES(
+        backend.btrfs.server.sqlite
+            backend.btrfs.proto.status_proto)
+    TARGET_LINK_LIBRARIES(
+        backend.btrfs.server.sqlite
+            backend.btrfs.proto.status_proto
+            ${Boost_SYSTEM_LIBRARY}
+            ${GLOG_LIBRARY}
+            ${SQLITE3_LIBRARY})
 
 # Implementation of the server-side backup.
 # LIBRARY: backup
@@ -24,11 +46,13 @@ FIND_PACKAGE(Glog REQUIRED)
     ADD_DEPENDENCIES(
         backend.btrfs.server.backup
             backend.btrfs.proto.backup_proto
-            backend.btrfs.proto.status_proto)
+            backend.btrfs.proto.status_proto
+            backend.btrfs.server.sqlite)
     TARGET_LINK_LIBRARIES(
         backend.btrfs.server.backup
             backend.btrfs.proto.backup_proto
             backend.btrfs.proto.status_proto
+            backend.btrfs.server.sqlite
             Ice)
 
 # Implementation of the server-side backup set.

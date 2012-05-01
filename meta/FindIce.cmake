@@ -72,6 +72,9 @@ if( NOT ICE_FOUND EQUAL 1 )
       include_directories( ${ICE_INCLUDE_DIR} )
       link_directories( ${ICE_LIBRARY_DIR} )
 
+      include(FindPackageHandleStandardArgs)
+      find_package_handle_standard_args(Ice DEFAULT_MSG ICE_INCLUDE_DIR ICE_LIBRARY_DIR)
+
       # Slice files are often installed elsewhere
       find_path( ICE_SLICE_ICE Communicator.ice
           # installation selected by user
