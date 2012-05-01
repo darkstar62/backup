@@ -12,6 +12,10 @@
 #include "backend/btrfs/proto/status_impl.h"
 #include "base/macros.h"
 
+namespace sqlite {
+class SQLiteDB;
+}  // namespace sqlite
+
 namespace backup {
 
 // Implementation of the ICE Backup object.  This lets the client half
@@ -87,10 +91,20 @@ class BackupImpl : public backup_proto::Backup {
 
  private:
   static const std::string kBackupImageName;
+  static const std::string kBackupDatabaseName;
+
+  // Initialize the filesystem.
+  backup_proto::StatusPtr InitFilesystem();
+
+  // Initialize the database.
+  backup_proto::StatusPtr InitDatabase();
 
   // Create the initially empty BTRFS filesystem.  This is the first step of
   // initializing the backup, whether it's full or otherwise.
   backup_proto::StatusPtr CreateFilesystemImage();
+
+  // Create the database schema for a new database.
+  backup_proto::StatusPtr CreateNewDatabaseSchema(sqlite::SQLiteDB* db);
 
   // Whether we've initialized or not.  This is called every time a client-side
   // backup is created, so we don't want to initialize the class more than once.

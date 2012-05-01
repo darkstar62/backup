@@ -19,6 +19,10 @@ using std::string;
 
 namespace sqlite {
 
+SQLiteDB::~SQLiteDB() {
+  Close();
+}
+
 bool SQLiteDB::Init() {
   sqlite3* db;
   char* error_msg;
@@ -63,6 +67,7 @@ StatusPtr SQLiteDB::QueryOrReturnStatus(
 void SQLiteDB::Close() {
   if (db_) {
     sqlite3_close(db_);
+    db_ = NULL;
   }
 }
 

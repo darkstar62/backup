@@ -11,11 +11,13 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <iostream>
+#include <set>
 #include <sstream>
 #include <string>
 
 #include "Ice/Ice.h"
 #include "backend/btrfs/proto/status.proto.h"
+#include "backend/btrfs/server/sqlite.h"
 #include "boost/filesystem.hpp"
 #include "glog/logging.h"
 
@@ -25,12 +27,17 @@ using backup_proto::kStatusBackupCreateFailed;
 using backup_proto::kStatusBackupInconsistent;
 using backup_proto::kStatusOk;
 using boost::filesystem::path;
+using sqlite::SQLiteDB;
+using sqlite::SQLiteResult;
+using sqlite::SQLiteRow;
 using std::ostringstream;
+using std::set;
 using std::string;
 
 namespace backup {
 
 const std::string BackupImpl::kBackupImageName = "backup.btrfs.img";
+const std::string BackupImpl::kBackupDatabaseName = "metadata.sqlite";
 
 StatusPtr BackupImpl::Init(const Ice::Current&) {
   if (initialized_) {
@@ -39,6 +46,34 @@ StatusPtr BackupImpl::Init(const Ice::Current&) {
 
   LOG(INFO) << "BackupImpl::Init";
 
+  // Initialize the filesystem.  This does rudamentary checks on the existing
+  // filesystem, or creates a new one if one doesn't exist.
+  StatusPtr retval;
+  retval = InitFilesystem();
+  if (!retval->ok()) {
+    return retval;
+  }
+
+  // Initialize the hash database.  This contains all the chunks for each file
+  // as well as all the metadata surrounding each file.
+  retval = InitDatabase();
+  if (!retval->ok()) {
+    return retval;
+  }
+
+  initialized_ = true;
+  return new StatusImpl(kStatusOk);
+}
+
+backup_proto::FileList BackupImpl::CheckFileSizes(
+    const backup_proto::FileAndSizeList& files,
+    const Ice::Current&) {
+  // TODO(darkstar62): Implement this
+  backup_proto::FileList definitely_new;
+  return definitely_new;
+}
+
+backup_proto::StatusPtr BackupImpl::InitFilesystem() {
   // Look for the backup filesystem.  If it doesn't exist, we need to create
   // it.
   path btrfs_image = path(mPath) / kBackupImageName;
@@ -68,17 +103,52 @@ StatusPtr BackupImpl::Init(const Ice::Current&) {
   // There may be other errors in the backup, but we don't check for them here.
   // Some problems will be detected in the course of restoring, but optimally
   // a periodic scan run on the backups will detect problems.
-
-  initialized_ = true;
   return new StatusImpl(kStatusOk);
 }
 
-backup_proto::FileList BackupImpl::CheckFileSizes(
-    const backup_proto::FileAndSizeList& files,
-    const Ice::Current&) {
-  // TODO(darkstar62): Implement this
-  backup_proto::FileList definitely_new;
-  return definitely_new;
+StatusPtr BackupImpl::InitDatabase() {
+  LOG(INFO) << "BackupImpl::InitDatabase";
+
+  // Connect to the database
+  path db_path = path(mPath) / kBackupDatabaseName;
+  SQLiteDB db(db_path.native());
+  if (!db.Init()) {
+    return new StatusImpl(kStatusBackupInconsistent,
+                          db.error_msg());
+  }
+
+  // Read off the tables in the database -- we should have a "schema" table
+  // which describes the version of the database table we're looking at.
+  SQLiteResult* result = db.Query(
+      "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;");
+  if (!result) {
+    return new StatusImpl(kStatusBackupInconsistent,
+                          db.error_msg());
+  }
+
+  set<string> tables;
+  while (SQLiteRow* row = result->NextRow()) {
+    string name = row->GetColumnAsString(0);
+    LOG(INFO) << "Table: " << name;
+    tables.insert(name);
+  }
+  LOG(INFO) << "Tables: " << tables.size();
+
+  // If there's no tables in the database, create a new schema for it.
+  if (tables.size() == 0) {
+    // New database, go create the schema.
+    return CreateNewDatabaseSchema(&db);
+  }
+
+  // Look for a schema table.
+  if (tables.find(string("schema")) == tables.end()) {
+    // No schema, this database looks to be corrupt.
+    return new StatusImpl(kStatusBackupInconsistent,
+                          "Missing schema table from sqlite database");
+  }
+
+  // FIXME(darkstar62, #7): How do we deal with different schema versions?
+  return new StatusImpl(kStatusOk);
 }
 
 StatusPtr BackupImpl::CreateFilesystemImage() {
@@ -134,6 +204,24 @@ StatusPtr BackupImpl::CreateFilesystemImage() {
           "Error executing command: Command returned error status");
     }
   }
+  return new StatusImpl(kStatusOk);
+}
+
+StatusPtr BackupImpl::CreateNewDatabaseSchema(SQLiteDB* db) {
+  StatusPtr retval = db->QueryOrReturnStatus(
+      "CREATE TABLE schema (name TEXT PRIMARY KEY, value TEXT);",
+      kStatusBackupCreateFailed, "Error occurred creating schema table: ");
+  if (!retval->ok()) {
+    return retval;
+  }
+
+  retval = db->QueryOrReturnStatus(
+      "INSERT INTO schema (name, value) VALUES ('version', '1')",
+      kStatusBackupCreateFailed, "Error occurred adding version: ");
+  if (!retval->ok()) {
+    return retval;
+  }
+
   return new StatusImpl(kStatusOk);
 }
 
