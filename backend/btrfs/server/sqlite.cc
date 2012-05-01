@@ -55,6 +55,11 @@ SQLiteResult* SQLiteDB::Query(const string& query) {
 StatusPtr SQLiteDB::QueryOrReturnStatus(
     const string& query, StatusEnum status_on_error, const string& reason) {
   SQLiteResult* result = Query(query);
+  if (!result) {
+    // An error occurred in the query
+    return new StatusImpl(status_on_error, reason + error_msg());
+  }
+
   SQLiteRow* row = result->NextRow();
   if (row) {
     // An error occurred, we shouldn't have a row.
@@ -77,9 +82,14 @@ const string SQLiteRow::GetColumnAsString(uint32_t column) {
   return ToString(sqlite3_column_text(statement_, column));
 }
 
+const int32_t SQLiteRow::GetColumnAsInteger(uint32_t column) {
+  return sqlite3_column_int(statement_, column);
+}
+
 ///////////////////////////////////////////
 
 SQLiteRow* SQLiteResult::NextRow() {
+  CHECK_NOTNULL(statement_);
   int rc = sqlite3_step(statement_);
   if (rc == SQLITE_ROW) {
     return row_.get();

@@ -11,6 +11,8 @@ FIND_PACKAGE(GFlags REQUIRED)
 FIND_PACKAGE(Glog REQUIRED)
 FIND_PACKAGE(Sqlite3 REQUIRED)
 
+ADD_SUBDIRECTORY(schemas)
+
 # SQLite3 wrapper library.
 # LIBRARY: sqlite
     LINT_SOURCES(
@@ -47,11 +49,13 @@ FIND_PACKAGE(Sqlite3 REQUIRED)
         backend.btrfs.server.backup
             backend.btrfs.proto.backup_proto
             backend.btrfs.proto.status_proto
+            backend.btrfs.server.schemas.schema
             backend.btrfs.server.sqlite)
     TARGET_LINK_LIBRARIES(
         backend.btrfs.server.backup
             backend.btrfs.proto.backup_proto
             backend.btrfs.proto.status_proto
+            backend.btrfs.server.schemas.schema
             backend.btrfs.server.sqlite
             Ice)
 
@@ -89,7 +93,8 @@ FIND_PACKAGE(Sqlite3 REQUIRED)
             backend.btrfs.proto.service_proto
             backend.btrfs.proto.status_proto
             backend.btrfs.server.backup
-            backend.btrfs.server.backup_set)
+            backend.btrfs.server.backup_set
+            backend.btrfs.server.schemas.schema)
     TARGET_LINK_LIBRARIES(
         btrfs_backend
             backend.btrfs.proto.backup_descriptor_proto
@@ -99,6 +104,7 @@ FIND_PACKAGE(Sqlite3 REQUIRED)
             backend.btrfs.proto.status_proto
             backend.btrfs.server.backup
             backend.btrfs.server.backup_set
+            backend.btrfs.server.schemas.schema
             Ice
             IceUtil
             ${Boost_FILESYSTEM_LIBRARY}

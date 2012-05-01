@@ -111,44 +111,34 @@ StatusPtr BackupImpl::InitDatabase() {
 
   // Connect to the database
   path db_path = path(mPath) / kBackupDatabaseName;
-  SQLiteDB db(db_path.native());
-  if (!db.Init()) {
+  SQLiteDB* db = new SQLiteDB(db_path.native());
+  if (!db->Init()) {
+    delete db;
     return new StatusImpl(kStatusBackupInconsistent,
-                          db.error_msg());
+                          db->error_msg());
   }
 
-  // Read off the tables in the database -- we should have a "schema" table
-  // which describes the version of the database table we're looking at.
-  SQLiteResult* result = db.Query(
-      "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;");
-  if (!result) {
-    return new StatusImpl(kStatusBackupInconsistent,
-                          db.error_msg());
+  // Get the database schema for the database.  This has the effect of creating
+  // the schema too if the database is new.  Note that on success, ownership of
+  // the database is transferred to the schema.
+  Schema* schema = NULL;
+  StatusPtr retval = Schema::DetectOrCreateSchema(db, &schema);
+  if (!retval->ok()) {
+    delete db;
+    return retval;
   }
 
-  set<string> tables;
-  while (SQLiteRow* row = result->NextRow()) {
-    string name = row->GetColumnAsString(0);
-    LOG(INFO) << "Table: " << name;
-    tables.insert(name);
-  }
-  LOG(INFO) << "Tables: " << tables.size();
-
-  // If there's no tables in the database, create a new schema for it.
-  if (tables.size() == 0) {
-    // New database, go create the schema.
-    return CreateNewDatabaseSchema(&db);
+  // Initialize the schema.  On a new database, this creates the empty schema.
+  // Existing databases are checked quickly for consistency.
+  retval = schema->Init();
+  if (!retval->ok()) {
+    delete schema;
+    return retval;
   }
 
-  // Look for a schema table.
-  if (tables.find(string("schema")) == tables.end()) {
-    // No schema, this database looks to be corrupt.
-    return new StatusImpl(kStatusBackupInconsistent,
-                          "Missing schema table from sqlite database");
-  }
+  schema_.reset(schema);
 
-  // FIXME(darkstar62, #7): How do we deal with different schema versions?
-  return new StatusImpl(kStatusOk);
+  return retval;
 }
 
 StatusPtr BackupImpl::CreateFilesystemImage() {
@@ -204,24 +194,6 @@ StatusPtr BackupImpl::CreateFilesystemImage() {
           "Error executing command: Command returned error status");
     }
   }
-  return new StatusImpl(kStatusOk);
-}
-
-StatusPtr BackupImpl::CreateNewDatabaseSchema(SQLiteDB* db) {
-  StatusPtr retval = db->QueryOrReturnStatus(
-      "CREATE TABLE schema (name TEXT PRIMARY KEY, value TEXT);",
-      kStatusBackupCreateFailed, "Error occurred creating schema table: ");
-  if (!retval->ok()) {
-    return retval;
-  }
-
-  retval = db->QueryOrReturnStatus(
-      "INSERT INTO schema (name, value) VALUES ('version', '1')",
-      kStatusBackupCreateFailed, "Error occurred adding version: ");
-  if (!retval->ok()) {
-    return retval;
-  }
-
   return new StatusImpl(kStatusOk);
 }
 

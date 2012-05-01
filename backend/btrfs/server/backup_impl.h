@@ -10,7 +10,9 @@
 #include "backend/btrfs/proto/backup.proto.h"
 #include "backend/btrfs/proto/status.proto.h"
 #include "backend/btrfs/proto/status_impl.h"
+#include "backend/btrfs/server/schemas/schema.h"
 #include "base/macros.h"
+#include "boost/scoped_ptr.hpp"
 
 namespace sqlite {
 class SQLiteDB;
@@ -103,12 +105,12 @@ class BackupImpl : public backup_proto::Backup {
   // initializing the backup, whether it's full or otherwise.
   backup_proto::StatusPtr CreateFilesystemImage();
 
-  // Create the database schema for a new database.
-  backup_proto::StatusPtr CreateNewDatabaseSchema(sqlite::SQLiteDB* db);
-
   // Whether we've initialized or not.  This is called every time a client-side
   // backup is created, so we don't want to initialize the class more than once.
   bool initialized_;
+
+  // Database schema connected with our database.
+  boost::scoped_ptr<Schema> schema_;
 
   DISALLOW_COPY_AND_ASSIGN(BackupImpl);
 };
