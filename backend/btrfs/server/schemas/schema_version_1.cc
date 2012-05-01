@@ -17,6 +17,9 @@ using backup_proto::StatusPtr;
 using backup_proto::kStatusOk;
 using backup_proto::kStatusBackupCreateFailed;
 using backup_proto::kStatusBackupInconsistent;
+using backup_proto::kStatusQueryFailed;
+using sqlite::SQLiteResult;
+using sqlite::SQLiteRow;
 using std::set;
 using std::string;
 using std::vector;
@@ -71,6 +74,7 @@ StatusPtr SchemaVersion1::CreateNewDatabaseSchema() {
     }
   }
 
+  // The files table.
   retval = db()->QueryOrReturnStatus(
       "CREATE TABLE files ("
           "file_id INT PRIMARY KEY,"
@@ -87,6 +91,14 @@ StatusPtr SchemaVersion1::CreateNewDatabaseSchema() {
   }
 
   retval = db()->QueryOrReturnStatus(
+      "CREATE INDEX files_size_index ON files (size)",
+      kStatusBackupCreateFailed, "Error occurred creating files_size_index: ");
+  if (!retval->ok()) {
+    return retval;
+  }
+
+  // The chunks table.
+  retval = db()->QueryOrReturnStatus(
       "CREATE TABLE chunks ("
           "chunk_id INT PRIMARY KEY,"
           "chunk_number INT,"
@@ -97,6 +109,33 @@ StatusPtr SchemaVersion1::CreateNewDatabaseSchema() {
     return retval;
   }
 
+  return new StatusImpl(kStatusOk);
+}
+
+StatusPtr SchemaVersion1::FileSizeExists(uint64_t size, bool* found) {
+  SQLiteResult* result = db()->Query(
+      "SELECT size FROM files WHERE size = " + ToString(size) + " LIMIT 1");
+  if (!result) {
+    return new StatusImpl(kStatusQueryFailed,
+                          "Failed to get file sizes: " + db()->error_msg());
+  }
+
+  SQLiteRow* row = result->NextRow();
+  if (!row) {
+    // No row means no results, so we don't have that size in the database.
+    *found = false;
+    return new StatusImpl(kStatusOk);
+  }
+
+  // Ensure the row found has the right size.
+  int64_t found_size = row->GetColumnAsInt64(0);
+  if (found_size != size) {
+    return new StatusImpl(kStatusQueryFailed,
+                          "Returned size different than requested: " +
+                          ToString(found_size) + " versus " + ToString(size));
+  }
+
+  *found = true;
   return new StatusImpl(kStatusOk);
 }
 

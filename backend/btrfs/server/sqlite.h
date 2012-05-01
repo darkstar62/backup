@@ -76,6 +76,7 @@ class SQLiteRow {
 
   const std::string GetColumnAsString(uint32_t column);
   const int32_t GetColumnAsInteger(uint32_t column);
+  const int64_t GetColumnAsInt64(uint32_t column);
 
   // Get/set the current error message.  This also modifies the error state,
   // which code can check for to determine if there was an error.

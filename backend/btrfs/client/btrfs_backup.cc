@@ -53,8 +53,10 @@ bool BtrfsBackup::DoBackup(const FileList& filelist) {
     files_and_sizes.push_back(file_and_size);
   }
 
-  backup_proto::FileList definitely_different =
-      backup_service_->CheckFileSizes(files_and_sizes);
+  backup_proto::FileList different;
+  backup_proto::FileList possibly_identical;
+  StatusPtr retval = backup_service_->CheckFileSizes(
+      files_and_sizes, different, possibly_identical);
 
   // For all possibly identical files, grab hash chunks from 1% of the file,
   // evenly spaced, and send them to the server.  The server will respond with

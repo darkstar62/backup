@@ -34,6 +34,11 @@ class Schema {
   // Create the database schema for a new database.
   virtual backup_proto::StatusPtr CreateNewDatabaseSchema() = 0;
 
+  // Look for any file with the given size.  Returns true in *found if there
+  // is, or false otherwise.  Status indicates any errors.
+  virtual backup_proto::StatusPtr FileSizeExists(
+      uint64_t size, bool* found) = 0;
+
   //////////////////////////////////////////
   // Schema Detection / Creation Functions
   //////////////////////////////////////////

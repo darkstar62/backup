@@ -86,6 +86,10 @@ const int32_t SQLiteRow::GetColumnAsInteger(uint32_t column) {
   return sqlite3_column_int(statement_, column);
 }
 
+const int64_t SQLiteRow::GetColumnAsInt64(uint32_t column) {
+  return sqlite3_column_int64(statement_, column);
+}
+
 ///////////////////////////////////////////
 
 SQLiteRow* SQLiteResult::NextRow() {

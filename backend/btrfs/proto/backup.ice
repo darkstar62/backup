@@ -31,9 +31,11 @@ class Backup {
   Status Init();
 
   // Check the passed files and sizes against the backup metadata.  The
-  // returned list of files have sizes different than anything seen in
-  // the backup so far.
-  FileList CheckFileSizes(FileAndSizeList files);
+  // different list contains names that are definitely new, and the
+  // possibly_identical list contains names that may be identical to files
+  // already beacked up.
+  Status CheckFileSizes(FileAndSizeList files, out FileList different,
+                        out FileList possibly_identical);
 
   // Accessors for the client
   string get_id();

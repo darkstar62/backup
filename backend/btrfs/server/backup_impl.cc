@@ -65,12 +65,28 @@ StatusPtr BackupImpl::Init(const Ice::Current&) {
   return new StatusImpl(kStatusOk);
 }
 
-backup_proto::FileList BackupImpl::CheckFileSizes(
+StatusPtr BackupImpl::CheckFileSizes(
     const backup_proto::FileAndSizeList& files,
+    backup_proto::FileList& different,
+    backup_proto::FileList& possibly_identical,
     const Ice::Current&) {
-  // TODO(darkstar62): Implement this
-  backup_proto::FileList definitely_new;
-  return definitely_new;
+  for (backup_proto::FileAndSizeList::const_iterator iter = files.begin();
+       iter != files.end(); ++iter) {
+    bool found = false;
+    StatusPtr retval = schema_->FileSizeExists(iter->size, &found);
+    if (!retval->ok()) {
+      LOG(ERROR) << "Error finding file sizes for " << iter->size << ": "
+                 << retval->ToString();
+      return retval;
+    }
+
+    if (found) {
+      possibly_identical.push_back(iter->filename);
+    } else {
+      different.push_back(iter->filename);
+    }
+  }
+  return new StatusImpl(kStatusOk);
 }
 
 backup_proto::StatusPtr BackupImpl::InitFilesystem() {
