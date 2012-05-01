@@ -7,7 +7,8 @@ the following libraries:
  * [Boost](http://www.boost.org/)
  * [ZeroC ICE](http://www.zeroc.com/) 3.4
  * [Google Logging Libraries (glog)](http://code.google.com/p/google-glog/)
- * [Google Command-Line Flags Libraries] (http://code.google.com/p/gflags/?redir=1)
+ * [Google Command-Line Flags Libraries](http://code.google.com/p/gflags/?redir=1)
+ * [SQLite3 Libraries](http://www.sqlite.org)
  * Essential build tools (gcc, make, git, etc.)
 
 I highly recommend installing the Google command-line flags library before the
