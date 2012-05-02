@@ -37,6 +37,9 @@ string StatusImpl::ToString(const Ice::Current& current) {
     case kStatusQueryFailed:
       str_reason << "Query failed: ";
       break;
+    case kStatusBackupFailed:
+      str_reason << "Backup failed: ";
+      break;
     default:
       LOG(FATAL) << "Internal error: status id should not be " << id;
       break;

@@ -12,7 +12,8 @@ enum StatusEnum {
   kStatusBackupSetCreateFailed,
   kStatusBackupCreateFailed,
   kStatusBackupInconsistent,
-  kStatusQueryFailed
+  kStatusQueryFailed,
+  kStatusBackupFailed
 };
 
 class Status {

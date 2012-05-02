@@ -37,6 +37,21 @@ class Backup {
   Status CheckFileSizes(FileAndSizeList files, out FileList different,
                         out FileList possibly_identical);
 
+  // Mount the remote filesystem and get it ready to handle the backup files.
+  Status MountFilesystem();
+
+  // Unmount the remote filesystem after a backup.
+  Status UnmountFilesystem();
+
+  // Open a file for writing.
+  Status OpenFile(string filename);
+
+  // Close a file.
+  Status CloseFile(string filename);
+
+  // Write a chunk.
+  Status SendChunk(string filename, long offset, long size, string buffer);
+
   // Accessors for the client
   string get_id();
   Ice::Identity get_id_as_identity();  // Needed for object lookup.

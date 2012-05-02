@@ -24,6 +24,7 @@
 using backup_proto::StatusImpl;
 using backup_proto::StatusPtr;
 using backup_proto::kStatusBackupCreateFailed;
+using backup_proto::kStatusBackupFailed;
 using backup_proto::kStatusBackupInconsistent;
 using backup_proto::kStatusOk;
 using boost::filesystem::path;
@@ -38,13 +39,12 @@ namespace backup {
 
 const std::string BackupImpl::kBackupImageName = "backup.btrfs.img";
 const std::string BackupImpl::kBackupDatabaseName = "metadata.sqlite";
+const std::string BackupImpl::kBackupMountPath = "_backup_mount";
 
 StatusPtr BackupImpl::Init(const Ice::Current&) {
   if (initialized_) {
     return new StatusImpl(kStatusOk);
   }
-
-  LOG(INFO) << "BackupImpl::Init";
 
   // Initialize the filesystem.  This does rudamentary checks on the existing
   // filesystem, or creates a new one if one doesn't exist.
@@ -89,7 +89,128 @@ StatusPtr BackupImpl::CheckFileSizes(
   return new StatusImpl(kStatusOk);
 }
 
-backup_proto::StatusPtr BackupImpl::InitFilesystem() {
+StatusPtr BackupImpl::MountFilesystem(const Ice::Current&) {
+  // Mounting the filesystem requires privileges, so if we don't have them,
+  // these calls will fail.
+  path btrfs_image = path(mPath) / kBackupImageName;
+  path btrfs_mount = path(mPath) / kBackupMountPath;
+
+  // Create the mount directory
+  // TODO(darkstar62): This form throws an exception if an error occurs --
+  // we should use the error-code version instead.
+  if (!boost::filesystem::create_directory(btrfs_mount)) {
+    return new StatusImpl(kStatusBackupFailed,
+                          "Failed to create mount directory");
+  }
+
+  // TODO(darkstar62): Yes, this is hacky.  But it *does* insulate us from
+  // kernel changes.  Of course, this only works in Linux...
+  string command =
+      "mount -t btrfs -o loop,compress-force " + btrfs_image.native() + " " +
+      btrfs_mount.native();
+  LOG(INFO) << "Executing command: " << command;
+  int retval = system(command.c_str());
+  if (retval != 0) {
+    int retval_rmdir = rmdir(btrfs_mount.native().c_str());
+    if (retval_rmdir < 0) {
+      LOG(ERROR) << "Could not delete directory " << btrfs_mount.native()
+                 << ": " << strerror(errno);
+    }
+    return new StatusImpl(kStatusBackupFailed,
+                          "Failed to mount filesystem, check server logs.");
+  }
+
+  return new StatusImpl(kStatusOk);
+}
+
+StatusPtr BackupImpl::UnmountFilesystem(const Ice::Current&) {
+  // Unmounting the filesystem requires privileges, so if we don't have them,
+  // these calls will fail.
+  path btrfs_image = path(mPath) / kBackupImageName;
+  path btrfs_mount = path(mPath) / kBackupMountPath;
+
+  // TODO(darkstar62): Yes, this is hacky.  But it *does* insulate us from
+  // kernel changes.  Of course, this only works in Linux...
+  string command = "umount " + btrfs_mount.native();
+  LOG(INFO) << "Executing command: " << command;
+  int retval = system(command.c_str());
+  if (retval != 0) {
+    return new StatusImpl(kStatusBackupFailed,
+                          "Failed to unmount filesystem, check server logs.");
+  }
+
+  int retval_rmdir = rmdir(btrfs_mount.native().c_str());
+  if (retval_rmdir < 0) {
+    LOG(ERROR) << "Could not delete directory " << btrfs_mount.native()
+               << ": " << strerror(errno);
+    return new StatusImpl(
+        kStatusBackupFailed,
+        "Failed to remove mountpoint directory: " + string(strerror(errno)));
+  }
+
+  return new StatusImpl(kStatusOk);
+}
+
+StatusPtr BackupImpl::OpenFile(
+    const string& filename, const Ice::Current&) {
+  // TODO(darkstar62): Files need to be in a hash so we can write to more
+  // than one at a time.
+  path file_path = path(mPath) / kBackupMountPath / filename;
+  path directory = file_path.parent_path();
+
+  if (!boost::filesystem::create_directories(directory)) {
+    if (!boost::filesystem::exists(directory) ||
+        !boost::filesystem::is_directory(directory)) {
+      // We couldn't create the directory.
+      return new StatusImpl(
+          kStatusBackupFailed,
+          "Failed to create directory for file: " + filename);
+    }
+  }
+
+  fd_ = open(file_path.native().c_str(),
+             O_RDWR | O_CREAT | O_TRUNC | O_EXCL,
+             S_IRUSR | S_IWUSR);
+  if (fd_ == -1) {
+    return new StatusImpl(
+        kStatusBackupFailed,
+        "Failed to open file " + filename + ": " + strerror(errno));
+  }
+  return new StatusImpl(kStatusOk);
+}
+
+StatusPtr BackupImpl::CloseFile(
+    const string& filename, const Ice::Current&) {
+  int ret = close(fd_);
+  if (ret == -1) {
+    return new StatusImpl(
+        kStatusBackupFailed,
+        "Failed to close file " + filename + ": " + strerror(errno));
+  }
+  return new StatusImpl(kStatusOk);
+}
+
+StatusPtr BackupImpl::SendChunk(
+    const string& filename, Ice::Long offset, Ice::Long size,
+    const string& buffer, const Ice::Current&) {
+  int ret = lseek(fd_, offset, SEEK_SET);
+  if (ret == -1) {
+    return new StatusImpl(
+        kStatusBackupFailed,
+        "Failed to seek in file " + filename + ": " + strerror(errno));
+  }
+
+  ret = write(fd_, &buffer.at(0), size);
+  if (ret == -1) {
+    return new StatusImpl(
+        kStatusBackupFailed,
+        "Failed to write chunk in file " + filename + ": " + strerror(errno));
+  }
+
+  return new StatusImpl(kStatusOk);
+}
+
+StatusPtr BackupImpl::InitFilesystem() {
   // Look for the backup filesystem.  If it doesn't exist, we need to create
   // it.
   path btrfs_image = path(mPath) / kBackupImageName;
@@ -123,8 +244,6 @@ backup_proto::StatusPtr BackupImpl::InitFilesystem() {
 }
 
 StatusPtr BackupImpl::InitDatabase() {
-  LOG(INFO) << "BackupImpl::InitDatabase";
-
   // Connect to the database
   path db_path = path(mPath) / kBackupDatabaseName;
   SQLiteDB* db = new SQLiteDB(db_path.native());

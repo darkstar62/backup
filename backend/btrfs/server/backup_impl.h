@@ -28,6 +28,8 @@ class BackupImpl : public backup_proto::Backup {
       : backup_proto::Backup(),
         initialized_(false) {
   }
+  // TODO(darkstar62): Implement cleanup from failed backups, or an attempt
+  // to, anyway.
   virtual ~BackupImpl() {}
 
   // Initialize the backup.  This includes creating the BTRFS image
@@ -42,6 +44,25 @@ class BackupImpl : public backup_proto::Backup {
       backup_proto::FileList& different,
       backup_proto::FileList& possibly_identical,
       const Ice::Current&);
+
+  // Mount the remote filesystem and get it ready to handle the backup files.
+  virtual backup_proto::StatusPtr MountFilesystem(const Ice::Current&);
+
+  // Unmount the remote filesystem after a backup.
+  virtual backup_proto::StatusPtr UnmountFilesystem(const Ice::Current&);
+
+  // Open a file for writing.
+  virtual backup_proto::StatusPtr OpenFile(
+      const std::string& filename, const Ice::Current&);
+
+  // Close a file.
+  virtual backup_proto::StatusPtr CloseFile(
+      const std::string& filename, const Ice::Current&);
+
+  // Write a chunk to an open file.
+  virtual backup_proto::StatusPtr SendChunk(
+      const std::string& filename, Ice::Long offset, Ice::Long size,
+      const std::string& buffer, const Ice::Current&);
 
   // Get/set the unique ID for this backup.
   virtual std::string get_id(const Ice::Current&) { return mId.name; }
@@ -97,6 +118,7 @@ class BackupImpl : public backup_proto::Backup {
  private:
   static const std::string kBackupImageName;
   static const std::string kBackupDatabaseName;
+  static const std::string kBackupMountPath;
 
   // Initialize the filesystem.
   backup_proto::StatusPtr InitFilesystem();
@@ -114,6 +136,9 @@ class BackupImpl : public backup_proto::Backup {
 
   // Database schema connected with our database.
   boost::scoped_ptr<Schema> schema_;
+
+  // File descriptor of the currently open file.
+  int fd_;
 
   DISALLOW_COPY_AND_ASSIGN(BackupImpl);
 };

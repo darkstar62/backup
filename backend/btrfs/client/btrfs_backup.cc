@@ -3,6 +3,10 @@
 
 #include "backend/btrfs/client/btrfs_backup.h"
 
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <string>
 #include <vector>
 
 #include "backend/btrfs/proto/backup.proto.h"
@@ -12,6 +16,7 @@
 
 using backup_proto::StatusPtr;
 using boost::filesystem::path;
+using std::string;
 using std::vector;
 
 namespace backup {
@@ -57,6 +62,18 @@ bool BtrfsBackup::DoBackup(const FileList& filelist) {
   backup_proto::FileList possibly_identical;
   StatusPtr retval = backup_service_->CheckFileSizes(
       files_and_sizes, different, possibly_identical);
+  if (!retval->ok()) {
+    LOG(ERROR) << "Error checking file sizes: " << retval->ToString();
+    return false;
+  }
+
+  // Tell the server to mount the filesystem and get it ready to receive
+  // files.
+  retval = backup_service_->MountFilesystem();
+  if (!retval->ok()) {
+    LOG(ERROR) << "Error mounting remote filesystem: " << retval->ToString();
+    return false;
+  }
 
   // For all possibly identical files, grab hash chunks from 1% of the file,
   // evenly spaced, and send them to the server.  The server will respond with
@@ -65,6 +82,11 @@ bool BtrfsBackup::DoBackup(const FileList& filelist) {
   // number of chunks at a time, rather than all at once.  If the server
   // responds at any time that the chunks didn't match, the file is different
   // and transferred in its entirety.
+  // TODO(darkstar62): Implement this.
+  for (backup_proto::FileList::const_iterator iter = possibly_identical.begin();
+       iter != possibly_identical.end(); ++iter) {
+    LOG(ERROR) << "Incremental algorithm not yet supported: " << *iter;
+  }
 
   // Start sending file contents, in order.  If the file is marked as possibly
   // identical, only send chunk hashes, until the server responds that the
@@ -72,6 +94,76 @@ bool BtrfsBackup::DoBackup(const FileList& filelist) {
   // filling in skipped chunks from a file containing identical data up to
   // that point, while we start sending real data at the failure point.  Other
   // definitely different files are transferred in their entirety.
+  //
+  // TODO(darkstar62): Implement sending chunks -- right now we're sending
+  // the entire file.
+  //
+  // TODO(darkstar62): Implement sending file metadata -- right now all
+  // files are created as root:root with -rw------- permissions.
+  backup_proto::FileList errors;
+  for (backup_proto::FileList::const_iterator iter = different.begin();
+       iter != different.end(); ++iter) {
+    int fd = open(iter->c_str(), O_RDONLY);
+    if (fd < 0) {
+      LOG(ERROR) << "Error opening " << *iter << ": " << strerror(errno);
+      errors.push_back(*iter);
+      continue;
+    }
+
+    retval = backup_service_->OpenFile(*iter);
+    if (!retval->ok()) {
+      LOG(ERROR) << "Server error opening file: " << *iter << ": "
+                 << retval->ToString();
+      errors.push_back(*iter);
+      close(fd);
+      continue;
+    }
+
+    uint64_t size = boost::filesystem::file_size(path(*iter));
+    uint64_t offset = 0;
+    string buffer;
+    buffer.resize(512 * 1024);
+    while (size > 0) {
+      int bytes_read = read(fd, &buffer.at(0), 512*1024);
+      CHECK_LT(-1, bytes_read) << "Don't know how to handle this!";
+
+      retval = backup_service_->SendChunk(*iter, offset, bytes_read, buffer);
+      if (!retval->ok()) {
+        LOG(ERROR) << "Error sending chunk: " << retval->ToString();
+        break;
+      }
+
+      size -= bytes_read;
+      offset += bytes_read;
+    }
+
+    retval = backup_service_->CloseFile(*iter);
+    if (!retval->ok()) {
+      LOG(ERROR) << "Server error closing file: " << *iter << ": "
+                 << retval->ToString();
+      errors.push_back(*iter);
+      close(fd);
+      continue;
+    }
+
+    close(fd);
+  }
+
+  // Send empty directories.
+  // TODO(darkstar62): Implement this.
+
+  // Send empty files / special files.
+  // TODO(darkstar62): Implement this.
+
+  // Unmount the filesystem after the end of the backup.
+  retval = backup_service_->UnmountFilesystem();
+  if (!retval->ok()) {
+    LOG(ERROR) << "Error unmounting remote filesystem: " << retval->ToString();
+    return false;
+  }
+
+  // Schedule a verification run now that we're all done.
+  // TODO(darkstar62): Implement this.
   return true;
 }
 
