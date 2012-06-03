@@ -21,7 +21,10 @@
 
 # start with 'not found'
 set( ICE_FOUND 0 CACHE BOOL "Do we have Ice?" )
-if( NOT ICE_FOUND EQUAL 1 )
+if( ICE_FOUND EQUAL 1 )
+  include_directories( ${ICE_INCLUDE_DIR} )
+  link_directories( ${ICE_LIBRARY_DIR} )
+else()
   find_path( ICE_HOME_INCLUDE_ICE Ice.h
     # rational for this search order:
     #    source install w/env.var -> source install
